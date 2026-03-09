@@ -1,6 +1,7 @@
-﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml;
 using System;
-using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using Microsoft.UI.Xaml.Controls;
 
 namespace ZapretGUI
 {
@@ -19,28 +20,41 @@ namespace ZapretGUI
 
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
-            _window = new MainWindow();
-            _window.Activate();
-            _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(_window);
-            _window.Closed += OnWindowClosed;
-
-            // Звук и DispatcherQueue
-            Microsoft.UI.Xaml.ElementSoundPlayer.State = Microsoft.UI.Xaml.ElementSoundPlayerState.On;
-            Microsoft.UI.Xaml.ElementSoundPlayer.SpatialAudioMode = Microsoft.UI.Xaml.ElementSpatialAudioMode.Off;
-            AppState.WinwsService.SetDispatcherQueue(_window.DispatcherQueue);
-
-            _trayIcon = new TrayIcon(_hwnd,
-                System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "TLSProxy.ico"),
-                "ZapretGUI — Остановлено",
-                onShow: ShowMainWindow,
-                onExit: ExitApp);
-
-            TrayIcon = _trayIcon;
-
-            AppState.WinwsService.StatusChanged += isRunning =>
+            try
             {
-                _trayIcon?.UpdateStatus(isRunning);
-            };
+                _window = new MainWindow();
+                _window.Activate();
+
+                _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(_window);
+                _window.Closed += OnWindowClosed;
+
+                Microsoft.UI.Xaml.ElementSoundPlayer.State = Microsoft.UI.Xaml.ElementSoundPlayerState.On;
+                Microsoft.UI.Xaml.ElementSoundPlayer.SpatialAudioMode = Microsoft.UI.Xaml.ElementSpatialAudioMode.Off;
+                AppState.WinwsService.SetDispatcherQueue(_window.DispatcherQueue);
+
+                _trayIcon = new TrayIcon(_hwnd,
+                    System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "TLSProxy.ico"),
+                    "ZapretGUI — Остановлено",
+                    onShow: ShowMainWindow,
+                    onExit: ExitApp);
+
+                TrayIcon = _trayIcon;
+
+                AppState.WinwsService.StatusChanged += isRunning =>
+                {
+                    _trayIcon?.UpdateStatus(isRunning);
+                };
+
+                if (AppSettings.AutoUpdateCheck)
+                {
+                    _ = Task.Run(async () => await Services.UpdateChecker.CheckAsync());
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("CRASH: " + ex.ToString());
+                throw;
+            }
         }
 
         private void OnWindowClosed(object sender, WindowEventArgs args)

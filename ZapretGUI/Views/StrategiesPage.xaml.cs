@@ -14,7 +14,6 @@ namespace ZapretGUI.Views
         private string _selectedBatPath = "";
         private Dictionary<string, string> _strategyPaths = new();
 
-        // описания стратегий
         private static readonly Dictionary<string, (string Type, string Usage)> StrategyInfo = new()
         {
             ["general"] = ("Основная", "Discord, YouTube, Google. Рекомендуется для большинства пользователей."),
@@ -46,7 +45,7 @@ namespace ZapretGUI.Views
 
         private void LoadStrategies()
         {
-            var strategiesPath = Path.Combine(AppContext.BaseDirectory, "winws", "strategies");
+            var strategiesPath = ZapretPaths.StrategiesDir;
             if (!Directory.Exists(strategiesPath)) return;
 
             var batFiles = Directory.GetFiles(strategiesPath, "*.bat").OrderBy(f => f).ToList();
@@ -84,7 +83,6 @@ namespace ZapretGUI.Views
                 StrategyDescText.Text = "";
             }
 
-            // показываем активна ли стратегия
             if (AppState.CurrentStrategy == name)
             {
                 StatusInfoBar.IsOpen = true;
@@ -101,10 +99,7 @@ namespace ZapretGUI.Views
         {
             if (string.IsNullOrEmpty(_selectedBatPath)) return;
 
-            var binPath = Path.Combine(AppContext.BaseDirectory, "winws") + "\\";
-            var listsPath = Path.Combine(AppContext.BaseDirectory, "winws", "lists") + "\\";
-
-            var arguments = BatStrategyParser.ExtractArguments(_selectedBatPath, binPath, listsPath);
+            var arguments = BatStrategyParser.ParseStrategy(_selectedBatPath);
 
             if (string.IsNullOrEmpty(arguments))
             {

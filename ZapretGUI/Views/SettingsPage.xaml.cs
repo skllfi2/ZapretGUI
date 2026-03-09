@@ -2,6 +2,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Win32;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using ZapretGUI.Services;
 
@@ -19,21 +20,20 @@ namespace ZapretGUI.Views
             LoadSettings();
             _isLoading = false;
             _ = Task.Run(LoadServiceStatus);
+            UpdateIpsetStatus();
         }
 
         private void LoadSettings()
         {
-            // Автозапуск с Windows
             using var key = Registry.CurrentUser.OpenSubKey(RegistryKey);
             AutostartToggle.IsOn = key?.GetValue(AppName) != null;
 
-            // Остальные настройки из AppSettings
             AutoStartZapretToggle.IsOn = AppSettings.AutoStartZapret;
             MinimizeToTrayToggle.IsOn = AppSettings.MinimizeToTrayOnStart;
             SoundEffectsToggle.IsOn = AppSettings.SoundEffects;
             ToastNotificationsToggle.IsOn = AppSettings.ToastNotifications;
+            AutoUpdateCheckToggle.IsOn = AppSettings.AutoUpdateCheck;
 
-            // Тема
             ThemeComboBox.SelectedIndex = AppSettings.Theme switch
             {
                 "Light" => 1,
@@ -41,8 +41,39 @@ namespace ZapretGUI.Views
                 _ => 0
             };
 
-            // Язык
             LanguageComboBox.SelectedIndex = AppSettings.Language == "en" ? 1 : 0;
+
+            // Game Filter
+            GameFilterComboBox.SelectedIndex = AppSettings.GameFilter switch
+            {
+                "all" => 1,
+                "tcp" => 2,
+                "udp" => 3,
+                _ => 0
+            };
+
+            // IPSet Filter
+            IpsetFilterComboBox.SelectedIndex = AppSettings.IpsetFilter switch
+            {
+                "loaded" => 1,
+                "none" => 2,
+                _ => 0
+            };
+        }
+
+        private void UpdateIpsetStatus()
+        {
+            var ipsetFile = Path.Combine(ZapretPaths.ListsDir, "ipset-all.txt");
+            if (File.Exists(ipsetFile))
+            {
+                var lines = 0;
+                try { lines = File.ReadAllLines(ipsetFile).Length; } catch { }
+                IpsetStatusText.Text = $"Загружен список: {lines} записей";
+            }
+            else
+            {
+                IpsetStatusText.Text = "Файл ipset-all.txt не найден";
+            }
         }
 
         private void AutostartToggle_Toggled(object sender, RoutedEventArgs e)
@@ -101,7 +132,25 @@ namespace ZapretGUI.Views
         {
             if (_isLoading) return;
             var tag = (LanguageComboBox.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "ru";
+            if (tag == AppSettings.Language) return;
             AppSettings.Language = tag;
+            AppSettings.Save();
+            MainWindow.Instance?.ReloadAllPages();
+        }
+
+        private void GameFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isLoading) return;
+            var tag = (GameFilterComboBox.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "disabled";
+            AppSettings.GameFilter = tag;
+            AppSettings.Save();
+        }
+
+        private void IpsetFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isLoading) return;
+            var tag = (IpsetFilterComboBox.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "any";
+            AppSettings.IpsetFilter = tag;
             AppSettings.Save();
         }
 
@@ -136,18 +185,26 @@ namespace ZapretGUI.Views
         private async void InstallService_Click(object sender, RoutedEventArgs e)
         {
             var strategy = AppState.CurrentStrategy;
-            var strategiesPath = System.IO.Path.Combine(AppContext.BaseDirectory, "winws", "strategies");
-            var batFile = System.IO.Path.Combine(strategiesPath, strategy + ".bat");
-            var binPath = System.IO.Path.Combine(AppContext.BaseDirectory, "winws") + "\\";
-            var listsPath = System.IO.Path.Combine(AppContext.BaseDirectory, "winws", "lists") + "\\";
-            var arguments = Services.BatStrategyParser.ExtractArguments(batFile, binPath, listsPath);
-            if (arguments == null) { AppendServiceLog("Ошибка: не удалось распарсить стратегию"); return; }
+            if (string.IsNullOrEmpty(strategy))
+            {
+                AppendServiceLog("Ошибка: сначала выберите стратегию на странице Стратегии");
+                return;
+            }
+
+            var batFile = Path.Combine(ZapretPaths.StrategiesDir, strategy + ".bat");
+            var arguments = BatStrategyParser.ParseStrategy(batFile);
+
+            if (arguments == null)
+            {
+                AppendServiceLog("Ошибка: не удалось распарсить стратегию");
+                return;
+            }
 
             InstallServiceButton.IsEnabled = false;
             AppendServiceLog($"Устанавливаю службу со стратегией: {strategy}...");
             await ServiceManager.InstallAsync(strategy, arguments, AppendServiceLog);
             InstallServiceButton.IsEnabled = true;
-            LoadServiceStatus();
+            _ = Task.Run(LoadServiceStatus);
         }
 
         private async void RemoveService_Click(object sender, RoutedEventArgs e)
@@ -155,7 +212,14 @@ namespace ZapretGUI.Views
             AppendServiceLog("Удаляю службы...");
             await ServiceManager.RemoveAsync(AppendServiceLog);
             AppendServiceLog("Готово.");
-            LoadServiceStatus();
+            _ = Task.Run(LoadServiceStatus);
+        }
+
+        private void AutoUpdateCheckToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (_isLoading) return;
+            AppSettings.AutoUpdateCheck = AutoUpdateCheckToggle.IsOn;
+            AppSettings.Save();
         }
     }
 }

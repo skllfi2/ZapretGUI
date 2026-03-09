@@ -14,8 +14,11 @@ namespace ZapretGUI
         public static bool MinimizeToTrayOnStart { get; set; } = false;
         public static bool SoundEffects { get; set; } = false;
         public static bool ToastNotifications { get; set; } = true;
+        public static bool AutoUpdateCheck { get; set; } = true;
         public static string Theme { get; set; } = "Default";
-        public static string Language { get; set; } = "ru";
+        public static string Language { get; set; } = GetSystemLanguage();
+        public static string GameFilter { get; set; } = "disabled";
+        public static string IpsetFilter { get; set; } = "any";
 
         static AppSettings() => Load();
 
@@ -31,8 +34,11 @@ namespace ZapretGUI
                 MinimizeToTrayOnStart = data.MinimizeToTrayOnStart;
                 SoundEffects = data.SoundEffects;
                 ToastNotifications = data.ToastNotifications;
+                AutoUpdateCheck = data.AutoUpdateCheck;
                 Theme = data.Theme ?? "Default";
-                Language = data.Language ?? "ru";
+                Language = data.Language ?? GetSystemLanguage();
+                GameFilter = data.GameFilter ?? "disabled";
+                IpsetFilter = data.IpsetFilter ?? "any";
             }
             catch { }
         }
@@ -48,8 +54,11 @@ namespace ZapretGUI
                     MinimizeToTrayOnStart = MinimizeToTrayOnStart,
                     SoundEffects = SoundEffects,
                     ToastNotifications = ToastNotifications,
+                    AutoUpdateCheck = AutoUpdateCheck,
                     Theme = Theme,
-                    Language = Language
+                    Language = Language,
+                    GameFilter = GameFilter,
+                    IpsetFilter = IpsetFilter
                 };
                 File.WriteAllText(_path, JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true }));
             }
@@ -62,8 +71,17 @@ namespace ZapretGUI
             public bool MinimizeToTrayOnStart { get; set; }
             public bool SoundEffects { get; set; }
             public bool ToastNotifications { get; set; }
+            public bool AutoUpdateCheck { get; set; } = true;
             public string? Theme { get; set; }
             public string? Language { get; set; }
+            public string? GameFilter { get; set; }
+            public string? IpsetFilter { get; set; }
+        }
+
+        public static string GetSystemLanguage()
+        {
+            var lang = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+            return lang == "ru" ? "ru" : "en";
         }
     }
 }

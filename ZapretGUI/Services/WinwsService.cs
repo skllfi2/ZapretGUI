@@ -20,9 +20,6 @@ namespace ZapretGUI.Services
             _dispatcherQueue = queue;
         }
 
-        private static string GetWinwsPath() =>
-            Path.Combine(AppContext.BaseDirectory, "winws", "winws.exe");
-
         private void PlaySound(Microsoft.UI.Xaml.ElementSoundKind kind)
         {
             if (!AppSettings.SoundEffects) return;
@@ -34,31 +31,22 @@ namespace ZapretGUI.Services
         {
             if (IsRunning) return;
 
-            var winwsPath = GetWinwsPath();
-            var workDir = Path.GetDirectoryName(winwsPath);
-
             _process = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = winwsPath,
+                    FileName = ZapretPaths.WinwsExe,
                     Arguments = arguments,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     CreateNoWindow = true,
-                    WorkingDirectory = workDir
+                    WorkingDirectory = ZapretPaths.WinwsDir
                 }
             };
 
-            _process.OutputDataReceived += (s, e) =>
-            {
-                if (e.Data != null) LogReceived?.Invoke(e.Data);
-            };
-            _process.ErrorDataReceived += (s, e) =>
-            {
-                if (e.Data != null) LogReceived?.Invoke(e.Data);
-            };
+            _process.OutputDataReceived += (s, e) => { if (e.Data != null) LogReceived?.Invoke(e.Data); };
+            _process.ErrorDataReceived += (s, e) => { if (e.Data != null) LogReceived?.Invoke(e.Data); };
 
             _process.Start();
             _process.BeginOutputReadLine();

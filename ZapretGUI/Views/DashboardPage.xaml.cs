@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -15,27 +14,46 @@ namespace ZapretGUI.Views
         public DashboardPage()
         {
             this.InitializeComponent();
-            this.Loaded += (s, e) => UpdateStatus();
 
-            // подписываемся на изменения статуса
+            this.Loaded += (s, e) =>
+            {
+                UpdateStatus();
+                // Показываем InfoBar если обновление уже найдено
+                if (UpdateChecker.UpdateAvailable && UpdateChecker.LatestVersion != null)
+                    ShowUpdateBanner(UpdateChecker.LatestVersion);
+            };
+
             _service.StatusChanged += isRunning =>
             {
                 DispatcherQueue.TryEnqueue(() => UpdateStatus());
             };
+
+            // Показываем InfoBar если обновление придёт пока страница открыта
+            UpdateChecker.UpdateFound += version =>
+            {
+                DispatcherQueue.TryEnqueue(() => ShowUpdateBanner(version));
+            };
+        }
+
+        private void ShowUpdateBanner(string version)
+        {
+            UpdateInfoBar.Message = $"Доступна новая версия zapret: {version}";
+            UpdateInfoBar.IsOpen = true;
+        }
+
+        private void UpdateBanner_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindow.Instance?.NavigateTo("updates");
         }
 
         private async void StartButton_Click(object sender, RoutedEventArgs e)
         {
             var strategyName = AppState.CurrentStrategy;
-            var strategiesPath = Path.Combine(AppContext.BaseDirectory, "winws", "strategies");
-            var batFile = Path.Combine(strategiesPath, strategyName + ".bat");
+            var batFile = Path.Combine(ZapretPaths.StrategiesDir, strategyName + ".bat");
 
-            // если есть .bat файл — парсим его
             if (File.Exists(batFile))
             {
-                var binPath = Path.Combine(AppContext.BaseDirectory, "winws") + "\\";
-                var listsPath = Path.Combine(AppContext.BaseDirectory, "winws", "lists") + "\\";
-                var arguments = Services.BatStrategyParser.ExtractArguments(batFile, binPath, listsPath);
+                var arguments = BatStrategyParser.ParseStrategy(batFile);
                 if (arguments != null)
                 {
                     await _service.StartAsync(arguments);
@@ -43,9 +61,9 @@ namespace ZapretGUI.Views
                 }
             }
 
-            // fallback — хардкод general стратегии
-            var binP = Path.Combine(AppContext.BaseDirectory, "winws") + "\\";
-            var listsP = Path.Combine(AppContext.BaseDirectory, "winws", "lists") + "\\";
+            // fallback
+            var listsP = ZapretPaths.ListsDir + "\\";
+            var binP = ZapretPaths.WinwsDir + "\\";
             var args =
                 $"--wf-tcp=80,443,2053,2083,2087,2096,8443 --wf-udp=443,19294-19344,50000-50100 " +
                 $"--filter-udp=443 --hostlist=\"{listsP}list-general.txt\" --hostlist-exclude=\"{listsP}list-exclude.txt\" --ipset-exclude=\"{listsP}ipset-exclude.txt\" --dpi-desync=fake --dpi-desync-repeats=6 --dpi-desync-fake-quic=\"{binP}quic_initial_www_google_com.bin\" --new " +

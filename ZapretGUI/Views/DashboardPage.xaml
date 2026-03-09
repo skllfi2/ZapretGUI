@@ -9,7 +9,6 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Spacing="16" Padding="32,24">
 
-            <!-- Заголовок -->
             <TextBlock x:Uid="DashboardTitle" Text="Главная"
                        Style="{ThemeResource TitleLargeTextBlockStyle}"
                        Margin="0,0,0,8"/>
@@ -24,15 +23,12 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-
                     <StackPanel Spacing="8">
                         <TextBlock x:Uid="StatusZaschity" Text="Статус защиты"
                                    Style="{ThemeResource CaptionTextBlockStyle}"
                                    Opacity="0.6"/>
                         <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                            <Ellipse x:Name="StatusIndicator"
-                                     Width="14" Height="14"
-                                     Fill="Red"/>
+                            <Ellipse x:Name="StatusIndicator" Width="14" Height="14" Fill="Red"/>
                             <TextBlock x:Uid="StatusText" x:Name="StatusText"
                                        Text="Остановлено"
                                        Style="{ThemeResource SubtitleTextBlockStyle}"/>
@@ -42,82 +38,62 @@
                                    Style="{ThemeResource CaptionTextBlockStyle}"
                                    Opacity="0.6"/>
                     </StackPanel>
-
-                    <!-- Кнопки -->
                     <StackPanel Grid.Column="1" Orientation="Horizontal"
                                 Spacing="8" VerticalAlignment="Center">
                         <Button x:Uid="StartButton" x:Name="StartButton"
                                 Content="▶  Запустить"
                                 Style="{ThemeResource AccentButtonStyle}"
-                                Click="StartButton_Click"
-                                Padding="20,10"/>
+                                Click="StartButton_Click" Padding="20,10"/>
                         <Button x:Uid="StopButton" x:Name="StopButton"
                                 Content="⏹  Остановить"
-                                Click="StopButton_Click"
-                                Padding="20,10"/>
+                                Click="StopButton_Click" Padding="20,10"/>
                     </StackPanel>
                 </Grid>
             </Border>
 
-            <!-- Карточки статистики -->
+            <!-- Карточки -->
             <Grid ColumnSpacing="16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-
-                <!-- Discord -->
                 <Border Grid.Column="0" CornerRadius="12" Padding="20"
                         Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1">
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                     <StackPanel Spacing="8">
                         <TextBlock x:Uid="Control" Text="🎮" FontSize="28"/>
-                        <TextBlock x:Uid="Discord" Text="Discord"
-                                   Style="{ThemeResource BodyStrongTextBlockStyle}"/>
+                        <TextBlock x:Uid="Discord" Text="Discord" Style="{ThemeResource BodyStrongTextBlockStyle}"/>
                         <TextBlock x:Uid="ObkhodDpiAktiven" Text="Обход DPI активен"
-                                   Style="{ThemeResource CaptionTextBlockStyle}"
-                                   Opacity="0.6"/>
+                                   Style="{ThemeResource CaptionTextBlockStyle}" Opacity="0.6"/>
                     </StackPanel>
                 </Border>
-
-                <!-- YouTube -->
                 <Border Grid.Column="1" CornerRadius="12" Padding="20"
                         Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1">
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                     <StackPanel Spacing="8">
                         <TextBlock x:Uid="Control1" Text="▶️" FontSize="28"/>
-                        <TextBlock x:Uid="Youtube" Text="YouTube"
-                                   Style="{ThemeResource BodyStrongTextBlockStyle}"/>
+                        <TextBlock x:Uid="Youtube" Text="YouTube" Style="{ThemeResource BodyStrongTextBlockStyle}"/>
                         <TextBlock x:Uid="ObkhodDpiAktiven1" Text="Обход DPI активен"
-                                   Style="{ThemeResource CaptionTextBlockStyle}"
-                                   Opacity="0.6"/>
+                                   Style="{ThemeResource CaptionTextBlockStyle}" Opacity="0.6"/>
                     </StackPanel>
                 </Border>
-
-                <!-- Google -->
                 <Border Grid.Column="2" CornerRadius="12" Padding="20"
                         Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1">
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                     <StackPanel Spacing="8">
                         <TextBlock x:Uid="Control2" Text="🔍" FontSize="28"/>
-                        <TextBlock x:Uid="Google" Text="Google"
-                                   Style="{ThemeResource BodyStrongTextBlockStyle}"/>
+                        <TextBlock x:Uid="Google" Text="Google" Style="{ThemeResource BodyStrongTextBlockStyle}"/>
                         <TextBlock x:Uid="ObkhodDpiAktiven2" Text="Обход DPI активен"
-                                   Style="{ThemeResource CaptionTextBlockStyle}"
-                                   Opacity="0.6"/>
+                                   Style="{ThemeResource CaptionTextBlockStyle}" Opacity="0.6"/>
                     </StackPanel>
                 </Border>
             </Grid>
 
-            <!-- Быстрый переход к стратегиям -->
+            <!-- Стратегия -->
             <Border CornerRadius="12" Padding="20"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1">
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -126,16 +102,27 @@
                     <StackPanel Spacing="4">
                         <TextBlock x:Uid="StrategiyaPodklyucheniya" Text="Стратегия подключения"
                                    Style="{ThemeResource BodyStrongTextBlockStyle}"/>
-                        <TextBlock x:Uid="VyberiteOptimalnuyuStrategiyuDlyaVashegoProvaydera" Text="Выберите оптимальную стратегию для вашего провайдера"
-                                   Style="{ThemeResource CaptionTextBlockStyle}"
-                                   Opacity="0.6"/>
+                        <TextBlock x:Uid="VyberiteOptimalnuyuStrategiyuDlyaVashegoProvaydera"
+                                   Text="Выберите оптимальную стратегию для вашего провайдера"
+                                   Style="{ThemeResource CaptionTextBlockStyle}" Opacity="0.6"/>
                     </StackPanel>
                     <HyperlinkButton x:Uid="Izmenit" Grid.Column="1"
-                                     Content="Изменить →"
-                                     VerticalAlignment="Center"
+                                     Content="Изменить →" VerticalAlignment="Center"
                                      Click="ChangeStrategy_Click"/>
                 </Grid>
             </Border>
+
+            <!-- InfoBar обновления -->
+            <InfoBar x:Name="UpdateInfoBar"
+                     IsOpen="False"
+                     IsClosable="True"
+                     Severity="Informational"
+                     Title="Доступно обновление">
+                <InfoBar.ActionButton>
+                    <HyperlinkButton Content="Перейти к обновлениям →"
+                                     Click="UpdateBanner_Click"/>
+                </InfoBar.ActionButton>
+            </InfoBar>
 
         </StackPanel>
     </ScrollViewer>

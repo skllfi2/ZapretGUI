@@ -16,6 +16,7 @@
     <NavigationView x:Name="NavigationViewControl"
                     PaneDisplayMode="LeftCompact"
                     IsTabStop="True"
+                    IsSettingsVisible="True"
                     SelectionChanged="NavigationView_SelectionChanged"
                     IsTitleBarAutoPaddingEnabled="False">
 
@@ -36,9 +37,14 @@
         <NavigationView.MenuItems>
             <NavigationViewItem x:Uid="Glavnaya" Icon="Home" Content="Главная" Tag="dashboard" />
             <NavigationViewItem x:Uid="Strategii" Icon="Library" Content="Стратегии" Tag="strategies" />
+            <NavigationViewItem x:Name="UpdatesNavItem" Icon="Sync" Content="Обновления" Tag="updates">
+                <NavigationViewItem.InfoBadge>
+                    <InfoBadge x:Name="UpdatesBadge"
+                               Visibility="Collapsed"
+                               Style="{ThemeResource AttentionIconInfoBadgeStyle}"/>
+                </NavigationViewItem.InfoBadge>
+            </NavigationViewItem>
             <NavigationViewItem x:Uid="Logi" Icon="Document" Content="Логи" Tag="logs" />
-            <NavigationViewItem x:Uid="Nastroyki" Icon="Setting" Content="Настройки" Tag="settings" />
-
         </NavigationView.MenuItems>
 
         <NavigationView.Content>

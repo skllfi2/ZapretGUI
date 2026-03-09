@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.ServiceProcess;
 using System.Threading.Tasks;
 
@@ -25,27 +24,18 @@ namespace ZapretGUI.Services
                         ServiceControllerStatus.StopPending => "Останавливается...",
                         _ => sc.Status.ToString()
                     };
-
                     var strategy = GetInstalledStrategy();
                     if (!string.IsNullOrEmpty(strategy))
                         return $"{state} (стратегия: {strategy})";
                     return state;
                 }
-                catch
-                {
-                    return "Не установлена";
-                }
+                catch { return "Не установлена"; }
             });
         }
 
         public static bool IsInstalled()
         {
-            try
-            {
-                var sc = new ServiceController(ServiceName);
-                _ = sc.Status;
-                return true;
-            }
+            try { var sc = new ServiceController(ServiceName); _ = sc.Status; return true; }
             catch { return false; }
         }
 
@@ -66,13 +56,12 @@ namespace ZapretGUI.Services
             {
                 try
                 {
-                    var binPath = Path.Combine(AppContext.BaseDirectory, "winws", "winws.exe");
                     log("Останавливаю службу...");
                     RunSc($"stop {ServiceName}");
                     log("Удаляю старую службу...");
                     RunSc($"delete {ServiceName}");
                     log("Создаю службу...");
-                    RunSc($"create {ServiceName} binPath= \"\\\"{binPath}\\\" {arguments}\" DisplayName= \"zapret\" start= auto");
+                    RunSc($"create {ServiceName} binPath= \"\\\"{ZapretPaths.WinwsExe}\\\" {arguments}\" DisplayName= \"zapret\" start= auto");
                     RunSc($"description {ServiceName} \"Zapret DPI bypass software\"");
                     log("Запускаю службу...");
                     RunSc($"start {ServiceName}");
@@ -84,10 +73,7 @@ namespace ZapretGUI.Services
 
                     log("✓ Служба успешно установлена и запущена");
                 }
-                catch (Exception ex)
-                {
-                    log($"✗ Ошибка: {ex.Message}");
-                }
+                catch (Exception ex) { log($"✗ Ошибка: {ex.Message}"); }
             });
         }
 
@@ -103,27 +89,20 @@ namespace ZapretGUI.Services
                     RunSc($"delete {ServiceName}");
 
                     foreach (var p in Process.GetProcessesByName("winws"))
-                    {
-                        p.Kill();
-                        log("winws.exe завершён");
-                    }
+                    { p.Kill(); log("winws.exe завершён"); }
 
                     log("Удаляю WinDivert...");
                     RunSc("stop WinDivert");
                     RunSc("delete WinDivert");
                     RunSc("stop WinDivert14");
                     RunSc("delete WinDivert14");
-
                     log("✓ Службы успешно удалены");
                 }
-                catch (Exception ex)
-                {
-                    log($"✗ Ошибка: {ex.Message}");
-                }
+                catch (Exception ex) { log($"✗ Ошибка: {ex.Message}"); }
             });
         }
 
-        private static string RunSc(string args)
+        private static void RunSc(string args)
         {
             try
             {
@@ -131,14 +110,12 @@ namespace ZapretGUI.Services
                 {
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
-                    RedirectStandardError = true,
                     CreateNoWindow = true
                 };
                 using var p = Process.Start(psi)!;
                 p.WaitForExit(5000);
-                return p.StandardOutput.ReadToEnd();
             }
-            catch { return ""; }
+            catch { }
         }
     }
 }

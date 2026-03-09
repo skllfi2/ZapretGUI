@@ -9,7 +9,7 @@
     mc:Ignorable="d">
 
     <ScrollViewer Padding="32,24,32,24">
-        <StackPanel Spacing="8" MaxWidth="800" HorizontalAlignment="Stretch">
+        <StackPanel Spacing="8" HorizontalAlignment="Stretch">
 
             <TextBlock x:Uid="NastroykiTitle" Text="Настройки" Style="{StaticResource TitleTextBlockStyle}" Margin="0,0,0,16"/>
 
@@ -30,13 +30,27 @@
                             <TextBlock x:Uid="ZapuskatZapretguiPriVkhodeVSistemu" Text="Запускать ZapretGUI при входе в систему" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
                         </StackPanel>
                         <ToggleSwitch x:Uid="AutostartToggle" x:Name="AutostartToggle" Grid.Column="1"
-                                      OnContent="" OffContent=""
-                                      VerticalAlignment="Center"
-                                      HorizontalAlignment="Right"
-                                      MinWidth="0"
-                                      Margin="0"
-                                      Padding="0"
+                                      OnContent="" OffContent="" VerticalAlignment="Center"
+                                      HorizontalAlignment="Right" MinWidth="0" Margin="0" Padding="0"
                                       Toggled="AutostartToggle_Toggled"/>
+                    </Grid>
+
+                    <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}"/>
+
+                    <Grid Padding="0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Автопроверка обновлений" Style="{StaticResource BodyTextBlockStyle}"/>
+                            <TextBlock Text="Проверять новые версии zapret при запуске приложения"
+                                       Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
+                        </StackPanel>
+                        <ToggleSwitch x:Name="AutoUpdateCheckToggle" Grid.Column="1"
+                                      OnContent="" OffContent="" VerticalAlignment="Center"
+                                      HorizontalAlignment="Right" MinWidth="0" Margin="0" Padding="0"
+                                      Toggled="AutoUpdateCheckToggle_Toggled"/>
                     </Grid>
 
                     <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}"/>
@@ -51,12 +65,8 @@
                             <TextBlock x:Uid="ZapuskatZaschituPriOtkrytiiPrilozheniya" Text="Запускать защиту при открытии приложения" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
                         </StackPanel>
                         <ToggleSwitch x:Uid="AutoStartZapretToggle" x:Name="AutoStartZapretToggle" Grid.Column="1"
-                                      OnContent="" OffContent=""
-                                      VerticalAlignment="Center"
-                                      HorizontalAlignment="Right"
-                                      MinWidth="0"
-                                      Margin="0"
-                                      Padding="0"
+                                      OnContent="" OffContent="" VerticalAlignment="Center"
+                                      HorizontalAlignment="Right" MinWidth="0" Margin="0" Padding="0"
                                       Toggled="AutoStartZapretToggle_Toggled"/>
                     </Grid>
 
@@ -72,12 +82,8 @@
                             <TextBlock x:Uid="SkryvatOknoPriStartePrilozheniya" Text="Скрывать окно при старте приложения" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
                         </StackPanel>
                         <ToggleSwitch x:Uid="MinimizeToTrayToggle" x:Name="MinimizeToTrayToggle" Grid.Column="1"
-                                      OnContent="" OffContent=""
-                                      VerticalAlignment="Center"
-                                      HorizontalAlignment="Right"
-                                      MinWidth="0"
-                                      Margin="0"
-                                      Padding="0"
+                                      OnContent="" OffContent="" VerticalAlignment="Center"
+                                      HorizontalAlignment="Right" MinWidth="0" Margin="0" Padding="0"
                                       Toggled="MinimizeToTrayToggle_Toggled"/>
                     </Grid>
 
@@ -148,12 +154,8 @@
                             <TextBlock x:Uid="ZvukPriZapuskeIOstanovkeZaschity" Text="Звук при запуске и остановке защиты" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
                         </StackPanel>
                         <ToggleSwitch x:Uid="SoundEffectsToggle" x:Name="SoundEffectsToggle" Grid.Column="1"
-                                      OnContent="" OffContent=""
-                                      VerticalAlignment="Center"
-                                      HorizontalAlignment="Right"
-                                      MinWidth="0"
-                                      Margin="0"
-                                      Padding="0"
+                                      OnContent="" OffContent="" VerticalAlignment="Center"
+                                      HorizontalAlignment="Right" MinWidth="0" Margin="0" Padding="0"
                                       Toggled="SoundEffectsToggle_Toggled"/>
                     </Grid>
 
@@ -169,17 +171,66 @@
                             <TextBlock x:Uid="PokazyvatUvedomleniyaPriIzmeneniiStatusa" Text="Показывать уведомления при изменении статуса" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
                         </StackPanel>
                         <ToggleSwitch x:Uid="ToastNotificationsToggle" x:Name="ToastNotificationsToggle" Grid.Column="1"
-                                      OnContent="" OffContent=""
-                                      VerticalAlignment="Center"
-                                      HorizontalAlignment="Right"
-                                      MinWidth="0"
-                                      Margin="0"
-                                      Padding="0"
+                                      OnContent="" OffContent="" VerticalAlignment="Center"
+                                      HorizontalAlignment="Right" MinWidth="0" Margin="0" Padding="0"
                                       Toggled="ToastNotificationsToggle_Toggled"/>
                     </Grid>
 
                 </StackPanel>
             </Border>
+
+            <!-- Фильтры -->
+            <TextBlock Text="Фильтры" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,16,0,8"/>
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1" CornerRadius="8" Padding="16,8">
+                <StackPanel>
+
+                    <!-- Game Filter -->
+                    <Grid Padding="0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Game Filter" Style="{StaticResource BodyTextBlockStyle}"/>
+                            <TextBlock Text="Расширить обход DPI на игровые порты (1024-65535)" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
+                        </StackPanel>
+                        <ComboBox x:Name="GameFilterComboBox" Grid.Column="1"
+                                  MinWidth="180" VerticalAlignment="Center"
+                                  SelectionChanged="GameFilterComboBox_SelectionChanged">
+                            <ComboBoxItem Content="Отключён" Tag="disabled"/>
+                            <ComboBoxItem Content="TCP и UDP" Tag="all"/>
+                            <ComboBoxItem Content="Только TCP" Tag="tcp"/>
+                            <ComboBoxItem Content="Только UDP" Tag="udp"/>
+                        </ComboBox>
+                    </Grid>
+
+                    <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}"/>
+
+                    <!-- IPSet Filter -->
+                    <Grid Padding="0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="IPSet Filter" Style="{StaticResource BodyTextBlockStyle}"/>
+                            <TextBlock x:Name="IpsetStatusText" Text="Загружен список IP"
+                                       Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
+                        </StackPanel>
+                        <ComboBox x:Name="IpsetFilterComboBox" Grid.Column="1"
+                                  MinWidth="180" VerticalAlignment="Center"
+                                  SelectionChanged="IpsetFilterComboBox_SelectionChanged">
+                            <ComboBoxItem Content="Любой IP (any)" Tag="any"/>
+                            <ComboBoxItem Content="Только из списка (loaded)" Tag="loaded"/>
+                            <ComboBoxItem Content="Никакой (none)" Tag="none"/>
+                        </ComboBox>
+                    </Grid>
+
+                </StackPanel>
+            </Border>
+
             <!-- Служба Windows -->
             <TextBlock x:Uid="SluzhbaWindows" Text="Служба Windows" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,16,0,8"/>
             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -187,7 +238,6 @@
                     BorderThickness="1" CornerRadius="8" Padding="16,8">
                 <StackPanel Spacing="0">
 
-                    <!-- Статус -->
                     <Grid Padding="0,10">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -202,7 +252,6 @@
 
                     <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}"/>
 
-                    <!-- Установка -->
                     <Grid Padding="0,10">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -210,18 +259,17 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
                             <TextBlock x:Uid="UstanovitSluzhbu" Text="Установить службу" Style="{StaticResource BodyTextBlockStyle}"/>
-                            <TextBlock x:Uid="AvtozapuskSluzhbySWindowsBezZapuskaPrilozheniya" Text="Автозапуск службы с Windows без запуска приложения"
+                            <TextBlock x:Uid="AvtozapuskSluzhbySWindowsBezZapuskaPrilozheniya"
+                                       Text="Автозапуск службы с Windows без запуска приложения"
                                        Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
                         </StackPanel>
                         <Button x:Uid="InstallServiceButton" x:Name="InstallServiceButton" Grid.Column="1"
-                                Content="Установить"
-                                Style="{StaticResource AccentButtonStyle}"
+                                Content="Установить" Style="{StaticResource AccentButtonStyle}"
                                 Click="InstallService_Click" VerticalAlignment="Center"/>
                     </Grid>
 
                     <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}"/>
 
-                    <!-- Удаление -->
                     <Grid Padding="0,10">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -229,7 +277,8 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
                             <TextBlock x:Uid="UdalitSluzhby" Text="Удалить службы" Style="{StaticResource BodyTextBlockStyle}"/>
-                            <TextBlock x:Uid="UdalyaetZapretWindivertIZavershaetWinwsExe" Text="Удаляет zapret, WinDivert и завершает winws.exe"
+                            <TextBlock x:Uid="UdalyaetZapretWindivertIZavershaetWinwsExe"
+                                       Text="Удаляет zapret, WinDivert и завершает winws.exe"
                                        Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
                         </StackPanel>
                         <Button x:Uid="Udalit" Grid.Column="1" Content="Удалить"
@@ -238,7 +287,6 @@
 
                     <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}"/>
 
-                    <!-- Лог операций -->
                     <StackPanel Padding="0,10" Spacing="6">
                         <TextBlock x:Uid="LogOperatsiy" Text="Лог операций" Style="{StaticResource BodyTextBlockStyle}"/>
                         <Border Background="{ThemeResource SystemFillColorSolidNeutralBackgroundBrush}"

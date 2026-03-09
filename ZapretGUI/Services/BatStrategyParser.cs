@@ -6,13 +6,17 @@ namespace ZapretGUI.Services
 {
     public static class BatStrategyParser
     {
+        public static string? ParseStrategy(string batFilePath)
+        {
+            return ExtractArguments(batFilePath, ZapretPaths.WinwsDir + "\\", ZapretPaths.ListsDir + "\\");
+        }
+
         public static string? ExtractArguments(string batFilePath, string binPath, string listsPath)
         {
             if (!File.Exists(batFilePath)) return null;
 
             var content = File.ReadAllText(batFilePath);
 
-            // ищем строку запуска winws.exe
             var match = Regex.Match(content,
                 @"start\s+""[^""]*""\s+/min\s+""[^""]*winws\.exe""\s+([\s\S]+?)(?=\r?\n\r?\n|\z)",
                 RegexOptions.IgnoreCase);
@@ -21,28 +25,62 @@ namespace ZapretGUI.Services
 
             var args = match.Groups[1].Value;
 
-            // убираем переносы строк с ^
+            // Убираем продолжение строк ^
             args = Regex.Replace(args, @"\s*\^\s*\r?\n\s*", " ");
 
-            // заменяем пути
+            // Подставляем пути
             args = args.Replace("%BIN%", binPath)
                        .Replace("%LISTS%", listsPath);
 
-            // убираем ,% GameFilterTCP% и ,%GameFilterUDP% (в конце списка портов)
-            args = Regex.Replace(args, @",\s*%GameFilterTCP%", "");
-            args = Regex.Replace(args, @",\s*%GameFilterUDP%", "");
+            // Применяем Game Filter из настроек
+            var gameFilter = AppSettings.GameFilter ?? "disabled";
+            var (gameTcp, gameUdp) = gameFilter switch
+            {
+                "all" => ("1024-65535", "1024-65535"),
+                "tcp" => ("1024-65535", ""),
+                "udp" => ("", "1024-65535"),
+                _ => ("", "") // disabled
+            };
 
-            // убираем --filter-tcp=%GameFilterTCP% и --filter-udp=%GameFilterUDP% (отдельные фильтры)
-            args = Regex.Replace(args, @"--filter-tcp=%GameFilterTCP%\s*", "");
-            args = Regex.Replace(args, @"--filter-udp=%GameFilterUDP%\s*", "");
+            if (!string.IsNullOrEmpty(gameTcp))
+            {
+                args = args.Replace("%GameFilterTCP%", gameTcp);
+            }
+            else
+            {
+                args = Regex.Replace(args, @",\s*%GameFilterTCP%", "");
+                args = Regex.Replace(args, @"%GameFilterTCP%\s*,\s*", "");
+                args = Regex.Replace(args, @"--filter-tcp=%GameFilterTCP%\s*", "");
+                args = args.Replace("%GameFilterTCP%", "");
+            }
 
-            // убираем оставшиеся %GameFilterTCP% и %GameFilterUDP%
-            args = args.Replace("%GameFilterTCP%", "")
-                       .Replace("%GameFilterUDP%", "");
+            if (!string.IsNullOrEmpty(gameUdp))
+            {
+                args = args.Replace("%GameFilterUDP%", gameUdp);
+            }
+            else
+            {
+                args = Regex.Replace(args, @",\s*%GameFilterUDP%", "");
+                args = Regex.Replace(args, @"%GameFilterUDP%\s*,\s*", "");
+                args = Regex.Replace(args, @"--filter-udp=%GameFilterUDP%\s*", "");
+                args = args.Replace("%GameFilterUDP%", "");
+            }
 
-            // убираем --new в конце если остался без фильтра
+            // Применяем IPSet Filter из настроек
+            var ipsetFilter = AppSettings.IpsetFilter ?? "any";
+            if (ipsetFilter != "any" && !args.Contains("--ipset-sflag"))
+            {
+                var newIndex = args.IndexOf("--new", StringComparison.OrdinalIgnoreCase);
+                if (newIndex > 0)
+                    args = args.Insert(newIndex, $"--ipset-sflag={ipsetFilter} ");
+                else
+                    args += $" --ipset-sflag={ipsetFilter}";
+            }
+
+            // Убираем висячий --new в конце
             args = Regex.Replace(args, @"--new\s*$", "");
 
+            // Нормализуем пробелы
             args = args.Trim();
             args = Regex.Replace(args, @"\s+", " ");
 

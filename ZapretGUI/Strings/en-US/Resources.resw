@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:schema id="root">
     <xs:element name="root" ns1:IsDataSet="true" />
@@ -19,7 +19,7 @@
     <value>Стратегии</value>
   </data>
   <data name="Logi.Content" xml:space="preserve">
-    <value>Логи</value>
+    <value>Logs</value>
   </data>
   <data name="Nastroyki.Content" xml:space="preserve">
     <value>Настройки</value>
@@ -67,7 +67,7 @@
     <value>Изменить →</value>
   </data>
   <data name="LogsTitle.Text" xml:space="preserve">
-    <value>Логи</value>
+    <value>Logs</value>
   </data>
   <data name="OchistitLogi.Content" xml:space="preserve">
     <value>Очистить логи</value>
@@ -118,7 +118,7 @@
     <value>Язык интерфейса приложения</value>
   </data>
   <data name="Russkiy.Content" xml:space="preserve">
-    <value>Русский</value>
+    <value>Russian</value>
   </data>
   <data name="English.Content" xml:space="preserve">
     <value>English</value>

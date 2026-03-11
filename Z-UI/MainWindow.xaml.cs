@@ -1,9 +1,8 @@
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media.Animation;
 using ZUI.Animations;
-using static ZUI.Animations.NavigationIconAnimator;
+using static ZapretGUI.Animations.NavigationIconAnimator;
 using ZUI.Services;
 using ZUI.Views;
 
@@ -52,6 +51,8 @@ namespace ZUI
             {
                 ContentFrame.Navigate(typeof(DashboardPage));
                 NavigationViewControl.SelectedItem = NavigationViewControl.MenuItems[0];
+                // Фоновая проверка обновлений hosts
+                _ = CheckHostsInBackground();
             }
 
             // Анимации иконок навигации
@@ -154,28 +155,6 @@ namespace ZUI
                     UpdatesBadge.Visibility = Visibility.Collapsed;
                     break;
             }
-
-            // Анимация иконки "Сервисы" при выборе страницы сервисов
-            var selectedItem = NavigationViewControl.SelectedItem as Microsoft.UI.Xaml.Controls.NavigationViewItem;
-            if (selectedItem?.Tag?.ToString() == "updates")
-            {
-                var icon = selectedItem.FindName("ServicesIconAnimated") as Microsoft.UI.Xaml.Controls.IconElement;
-                if (icon != null)
-                {
-                    var storyboard = icon.Resources["ServicesIconAnimation"] as Storyboard;
-                    storyboard?.Begin();
-                }
-            }
-            else
-            {
-                // Останавливаем анимацию при выборе других страниц
-                var icon = NavigationViewControl.FindName("ServicesIconAnimated") as Microsoft.UI.Xaml.Controls.IconElement;
-                if (icon != null)
-                {
-                    var storyboard = icon.Resources["ServicesIconAnimation"] as Storyboard;
-                    storyboard?.Stop();
-                }
-            }
         }
 
         public void ReloadSettings() => ContentFrame.Navigate(typeof(SettingsPage));
@@ -192,6 +171,18 @@ namespace ZUI
         public void ApplyAnimationSettings()
         {
             NavigationIconAnimator.Enabled = AppSettings.AnimNavIcons;
+        }
+
+        private async Task CheckHostsInBackground()
+        {
+            await Task.Delay(3000); // не мешать загрузке UI
+            if (ContentFrame.Content is ServicesPage sp)
+                await sp.CheckHostsUpdateAvailable();
+            else
+            {
+                // Страница не открыта — просто проверяем тихо через временный экземпляр
+                // Нет доступа к UI элементам, пропускаем — проверится при открытии ServicesPage
+            }
         }
 
         public void CompleteSetup()

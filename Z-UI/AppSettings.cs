@@ -22,6 +22,10 @@ namespace ZUI
         public static bool SetupCompleted { get; set; } = false;
         // Анимации — гранулярные флаги
         public static bool AnimNavIcons    { get; set; } = true;  // Иконки навигации
+        // Hosts
+        public static string HostsHash        { get; set; } = "";
+        public static DateTime HostsLastCheck { get; set; } = DateTime.MinValue;
+        public static bool HostsAutoUpdate    { get; set; } = false;
         public static bool AnimButtons     { get; set; } = true;  // Кнопки на страницах
         public static bool AnimCards       { get; set; } = true;  // Карточки (hover)
 
@@ -48,6 +52,9 @@ namespace ZUI
                 AnimNavIcons = data.AnimNavIcons;
                 AnimButtons  = data.AnimButtons;
                 AnimCards    = data.AnimCards;
+                HostsHash        = data.HostsHash ?? "";
+                HostsLastCheck   = data.HostsLastCheck;
+                HostsAutoUpdate  = data.HostsAutoUpdate;
             }
             catch { }
         }
@@ -71,7 +78,10 @@ namespace ZUI
                     SetupCompleted = SetupCompleted,
                     AnimNavIcons = AnimNavIcons,
                     AnimButtons  = AnimButtons,
-                    AnimCards    = AnimCards
+                    AnimCards    = AnimCards,
+                    HostsHash        = HostsHash,
+                    HostsLastCheck   = HostsLastCheck,
+                    HostsAutoUpdate  = HostsAutoUpdate
                 };
                 File.WriteAllText(_path, JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true }));
             }
@@ -93,6 +103,9 @@ namespace ZUI
             public bool AnimNavIcons { get; set; } = true;
             public bool AnimButtons  { get; set; } = true;
             public bool AnimCards    { get; set; } = true;
+            public string? HostsHash       { get; set; } = "";
+            public DateTime HostsLastCheck { get; set; } = DateTime.MinValue;
+            public bool HostsAutoUpdate    { get; set; } = false;
         }
 
         public static string GetSystemLanguage()

@@ -50,7 +50,7 @@ namespace ZUI.Views
             };
 
             LanguageComboBox.SelectedIndex = AppSettings.Language == "en" ? 1 : 0;
-
+            HostsAutoUpdateToggle.IsOn = AppSettings.HostsAutoUpdate;
         }
 
 
@@ -124,6 +124,13 @@ namespace ZUI.Views
         }
 
 
+
+        private void HostsAutoUpdateToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (_isLoading) return;
+            AppSettings.HostsAutoUpdate = HostsAutoUpdateToggle.IsOn;
+            AppSettings.Save();
+        }
 
         private static void ApplyTheme(string theme)
         {

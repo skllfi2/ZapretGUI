@@ -60,6 +60,24 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Автообновление hosts" Style="{StaticResource BodyTextBlockStyle}"/>
+                            <TextBlock Text="Применять обновления hosts автоматически при запуске (требует прав администратора)"
+                                       Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
+                        </StackPanel>
+                        <ToggleSwitch x:Name="HostsAutoUpdateToggle" Grid.Column="1"
+                                      OnContent="" OffContent="" VerticalAlignment="Center"
+                                      HorizontalAlignment="Right" MinWidth="0" Margin="0" Padding="0"
+                                      Toggled="HostsAutoUpdateToggle_Toggled"/>
+                    </Grid>
+
+                    <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}"/>
+
+                    <Grid Padding="0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
                             <TextBlock x:Uid="AvtostartZapret" Text="Запускать защиту автоматически" Style="{StaticResource BodyTextBlockStyle}"/>
                             <TextBlock x:Uid="ZapuskatZaschituPriOtkrytiiPrilozheniya" Text="Запускать защиту при открытии приложения" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
                         </StackPanel>

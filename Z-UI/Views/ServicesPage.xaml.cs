@@ -27,6 +27,197 @@ namespace ZUI.Views
         private const string VersionUrl     = "https://raw.githubusercontent.com/Flowseal/zapret-discord-youtube/main/.service/version.txt";
         private const string IpsetUrl       = "https://raw.githubusercontent.com/Flowseal/zapret-discord-youtube/refs/heads/main/.service/ipset-service.txt";
         private const string HostsUrl       = "https://raw.githubusercontent.com/Flowseal/zapret-discord-youtube/refs/heads/main/.service/hosts";
+        private const string MalwHostsUrl   = "https://raw.githubusercontent.com/ImMALWARE/dns.malw.link/master/hosts";
+        private const string FlowsealApiUrl = "https://api.github.com/repos/Flowseal/zapret-discord-youtube/commits?path=.service/hosts&per_page=1";
+
+        private static bool IsRunningAsAdmin()
+        {
+            var id = System.Security.Principal.WindowsIdentity.GetCurrent();
+            return new System.Security.Principal.WindowsPrincipal(id)
+                .IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+        }
+
+        private static void RestartAsAdmin()
+        {
+            var exe = System.Diagnostics.Process.GetCurrentProcess().MainModule!.FileName;
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = exe, UseShellExecute = true, Verb = "runas"
+            });
+            Application.Current.Exit();
+        }
+
+        private static string ComputeSHA256(string text)
+        {
+            var bytes = System.Security.Cryptography.SHA256.HashData(
+                System.Text.Encoding.UTF8.GetBytes(text));
+            return Convert.ToHexString(bytes);
+        }
+
+        private static async Task<string> BuildMergedHostsBlock(HttpClient http)
+        {
+            var flowsealContent = await http.GetStringAsync(
+                "https://raw.githubusercontent.com/Flowseal/zapret-discord-youtube/refs/heads/main/.service/hosts");
+            var malwContent = await http.GetStringAsync(
+                "https://raw.githubusercontent.com/ImMALWARE/dns.malw.link/master/hosts");
+
+            var flowsealDomains = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var line in flowsealContent.Split('\n'))
+            {
+                var t = line.Trim();
+                if (t.StartsWith('#') || string.IsNullOrWhiteSpace(t)) continue;
+                var parts = t.Split(new char[]{' ','\t'}, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length >= 2) flowsealDomains.Add(parts[1]);
+            }
+
+            var extraLines = new List<string>();
+            foreach (var line in malwContent.Split('\n'))
+            {
+                var t = line.Trim();
+                if (t.StartsWith('#') || string.IsNullOrWhiteSpace(t)) continue;
+                var parts = t.Split(new char[]{' ','\t'}, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length >= 2 && !flowsealDomains.Contains(parts[1]))
+                    extraLines.Add(t);
+            }
+
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("# ===== zapret hosts (Flowseal) =====");
+            sb.Append(flowsealContent.TrimEnd());
+            if (extraLines.Count > 0)
+            {
+                sb.AppendLine(); sb.AppendLine();
+                sb.AppendLine("# ===== дополнительные домены (ImMALWARE/dns.malw.link) =====");
+                foreach (var l in extraLines) sb.AppendLine(l);
+            }
+            return sb.ToString();
+        }
+
+        public async Task CheckHostsUpdateAvailable()
+        {
+            try
+            {
+                // Лёгкий запрос к GitHub API — только дата последнего коммита
+                var req = new System.Net.Http.HttpRequestMessage(
+                    System.Net.Http.HttpMethod.Get, FlowsealApiUrl);
+                req.Headers.Add("User-Agent", "Z-UI");
+                var resp = await _http.SendAsync(req);
+                if (!resp.IsSuccessStatusCode) return;
+
+                var json = await resp.Content.ReadAsStringAsync();
+                using var doc = System.Text.Json.JsonDocument.Parse(json);
+                var dateStr = doc.RootElement[0]
+                    .GetProperty("commit").GetProperty("author").GetProperty("date").GetString();
+                if (DateTime.TryParse(dateStr, out var commitDate) && commitDate > AppSettings.HostsLastCheck)
+                {
+                    DispatcherQueue.TryEnqueue(() =>
+                    {
+                        HostsUpdateBadge.Visibility = Visibility.Visible;
+                        HostsStatusText.Text = "Доступно обновление hosts";
+                    });
+
+                    // Автообновление если включено и есть права
+                    if (AppSettings.HostsAutoUpdate && IsRunningAsAdmin())
+                        await ApplyHostsAsync(silent: true);
+                }
+                else
+                {
+                    DispatcherQueue.TryEnqueue(() =>
+                        HostsLastCheckText.Text = $"Проверено: {AppSettings.HostsLastCheck:dd.MM.yy HH:mm}");
+                }
+                AppSettings.HostsLastCheck = DateTime.UtcNow;
+                AppSettings.Save();
+            }
+            catch { }
+        }
+
+        private async Task ApplyHostsAsync(bool silent = false)
+        {
+            var hostsFile = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.System),
+                "drivers", "etc", "hosts");
+            try
+            {
+                if (!silent)
+                    DispatcherQueue.TryEnqueue(() =>
+                    {
+                        HostsProgressPanel.Visibility = Visibility.Visible;
+                        HostsProgressBar.IsIndeterminate = true;
+                        HostsProgressLabel.Text = "↓ Скачиваю Flowseal hosts...";
+                        HostsStatusText.Text = "Загружается...";
+                        UpdateHostsButton.IsEnabled = false;
+                    });
+
+                var block = await BuildMergedHostsBlock(_http);
+                var hash  = ComputeSHA256(block);
+
+                if (!silent)
+                    DispatcherQueue.TryEnqueue(() => HostsProgressLabel.Text = "Проверяю актуальность...");
+
+                if (hash == AppSettings.HostsHash)
+                {
+                    DispatcherQueue.TryEnqueue(() =>
+                    {
+                        HostsStatusText.Text = "Hosts актуален";
+                        HostsLastCheckText.Text = $"Обновлён: {AppSettings.HostsLastCheck:dd.MM.yy HH:mm}";
+                        HostsUpdateBadge.Visibility = Visibility.Collapsed;
+                        HostsProgressPanel.Visibility = Visibility.Collapsed;
+                        UpdateHostsButton.IsEnabled = true;
+                    });
+                    if (!silent) AppendUpdateLog("✓ Файл hosts актуален");
+                    return;
+                }
+
+                if (!silent)
+                    DispatcherQueue.TryEnqueue(() => HostsProgressLabel.Text = "Применяю изменения...");
+
+                var localContent = await File.ReadAllTextAsync(hostsFile);
+                var backupFile   = hostsFile + ".backup_zui";
+                if (!File.Exists(backupFile)) File.Copy(hostsFile, backupFile);
+
+                var clean = localContent;
+                var idx   = clean.IndexOf("# ===== zapret hosts");
+                if (idx >= 0) clean = clean[..idx].TrimEnd();
+
+                await File.WriteAllTextAsync(hostsFile, clean + "
+
+" + block);
+
+                AppSettings.HostsHash        = hash;
+                AppSettings.HostsLastCheck   = DateTime.UtcNow;
+                AppSettings.Save();
+
+                var count = block.Split('\n').Length;
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    HostsStatusText.Text = "Hosts обновлён ✓";
+                    HostsLastCheckText.Text = $"Обновлён: {DateTime.Now:dd.MM.yy HH:mm}";
+                    HostsUpdateBadge.Visibility = Visibility.Collapsed;
+                    HostsProgressPanel.Visibility = Visibility.Collapsed;
+                    UpdateHostsButton.IsEnabled = true;
+                });
+                if (!silent) AppendUpdateLog($"✓ Hosts применён ({count} строк). Бэкап: {backupFile}");
+            }
+            catch (UnauthorizedAccessException)
+            {
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    HostsStatusText.Text = "Нет прав администратора";
+                    HostsProgressPanel.Visibility = Visibility.Collapsed;
+                    UpdateHostsButton.IsEnabled = true;
+                });
+                if (!silent) AppendUpdateLog("✗ Нет прав на запись hosts");
+            }
+            catch (Exception ex)
+            {
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    HostsStatusText.Text = "Ошибка";
+                    HostsProgressPanel.Visibility = Visibility.Collapsed;
+                    UpdateHostsButton.IsEnabled = true;
+                });
+                if (!silent) AppendUpdateLog($"✗ Ошибка: {ex.Message}");
+            }
+        }
         private const string ApiReleasesUrl = "https://api.github.com/repos/Flowseal/zapret-discord-youtube/releases/latest";
 
         private static readonly HttpClient _http = new()
@@ -823,48 +1014,24 @@ namespace ZUI.Views
 
         private async void UpdateHosts_Click(object sender, RoutedEventArgs e)
         {
-            SetUpdateButtonsEnabled(false);
-            DispatcherQueue.TryEnqueue(() => HostsStatusText.Text = "Загружается...");
-            AppendUpdateLog("\nПроверяю файл hosts...");
-            try
+            if (!IsRunningAsAdmin())
             {
-                var remoteContent = await _http.GetStringAsync(HostsUrl);
-                var hostsFile = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.System),
-                    "drivers", "etc", "hosts");
-                var localContent = await File.ReadAllTextAsync(hostsFile);
-                var remoteLines  = remoteContent.Trim().Split('\n');
+                var dialog = new ContentDialog
+                {
+                    Title             = "Требуются права администратора",
+                    Content           = "Запись в hosts требует прав администратора.\nПерезапустить Z-UI от имени администратора?",
+                    PrimaryButtonText = "Перезапустить",
+                    CloseButtonText   = "Отмена",
+                    XamlRoot          = this.XamlRoot
+                };
+                if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+                    RestartAsAdmin();
+                return;
+            }
 
-                if (localContent.Contains(remoteLines[0].Trim()) && localContent.Contains(remoteLines[^1].Trim()))
-                {
-                    DispatcherQueue.TryEnqueue(() => HostsStatusText.Text = "Файл hosts актуален");
-                    AppendUpdateLog("✓ Файл hosts актуален");
-                }
-                else
-                {
-                    var tempFile = Path.Combine(Path.GetTempPath(), "zapret_hosts.txt");
-                    await File.WriteAllTextAsync(tempFile, remoteContent);
-                    DispatcherQueue.TryEnqueue(() =>
-                    {
-                        HostsStatusText.Text = "Требуется обновление";
-                        AppendUpdateLog("↑ Hosts файл устарел");
-                        AppendUpdateLog($"  Новый hosts: {tempFile}");
-                        AppendUpdateLog("  Скопируйте содержимое в системный hosts файл");
-                        System.Diagnostics.Process.Start("notepad.exe", tempFile);
-                        System.Diagnostics.Process.Start("notepad.exe", hostsFile);
-                    });
-                }
-            }
-            catch (UnauthorizedAccessException)
-            {
-                DispatcherQueue.TryEnqueue(() => HostsStatusText.Text = "Нет доступа к hosts");
-                AppendUpdateLog("✗ Нет прав на чтение hosts");
-            }
-            catch (Exception ex)
-            {
-                DispatcherQueue.TryEnqueue(() => HostsStatusText.Text = "Ошибка");
-                AppendUpdateLog($"✗ Ошибка: {ex.Message}");
-            }
+            SetUpdateButtonsEnabled(false);
+            AppendUpdateLog("\nОбновление hosts...");
+            await ApplyHostsAsync(silent: false);
             SetUpdateButtonsEnabled(true);
         }
 

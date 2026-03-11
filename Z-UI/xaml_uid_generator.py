@@ -1,0 +1,561 @@
+"""
+xaml_uid_generator.py
+─────────────────────
+Обходит все .xaml файлы в папке проекта:
+  1. Находит контролы с текстом (TextBlock, Button, ComboBoxItem, ToggleSwitch, …)
+  2. Проверяет наличие x:Uid — если есть, пропускает
+  3. Генерирует x:Uid из x:Name или из текста контрола
+  4. Вставляет x:Uid в .xaml (форматирование сохраняется)
+  5. Добавляет строки в Resources.resw для каждой указанной локали
+     (не перезаписывает уже существующие ключи)
+
+Запуск (минимальный):
+    python xaml_uid_generator.py --root F:\\Dev\\ZapretGUI\\ZapretGUI
+
+Все параметры:
+    --root      Корень проекта (.xaml ищутся рекурсивно)
+    --resw      Пути к .resw через запятую
+                По умолчанию: <root>\\Strings\\ru-RU\\Resources.resw,
+                              <root>\\Strings\\en-US\\Resources.resw
+    --dry       Только вывод, без записи файлов
+    --controls  Список контролов через запятую
+"""
+
+import argparse
+import json
+import re
+import sys
+from pathlib import Path
+import xml.etree.ElementTree as ET
+
+# ─── Контролы и их текстовые атрибуты ────────────────────────────────────────
+
+CONTROL_TEXT_ATTR: dict[str, list[str]] = {
+    "TextBlock":          ["Text"],
+    "Button":             ["Content"],
+    "ComboBoxItem":       ["Content"],
+    "ToggleSwitch":       ["Header"],        # OnContent/OffContent часто пустые
+    "HyperlinkButton":    ["Content"],
+    "RadioButton":        ["Content"],
+    "CheckBox":           ["Content"],
+    "AppBarButton":       ["Label"],
+    "MenuFlyoutItem":     ["Text"],
+    "NavigationViewItem": ["Content"],
+    "TextBox":            ["PlaceholderText", "Header"],
+    "PasswordBox":        ["PlaceholderText", "Header"],
+}
+
+DEFAULT_CONTROLS = list(CONTROL_TEXT_ATTR.keys())
+
+X_NS   = "http://schemas.microsoft.com/winfx/2006/xaml"
+X_UID  = f"{{{X_NS}}}Uid"
+X_NAME = f"{{{X_NS}}}Name"
+
+# ─── Транслитерация и генерация идентификатора ────────────────────────────────
+
+_RU_MAP = {
+    "а":"a","б":"b","в":"v","г":"g","д":"d","е":"e","ё":"yo","ж":"zh",
+    "з":"z","и":"i","й":"y","к":"k","л":"l","м":"m","н":"n","о":"o",
+    "п":"p","р":"r","с":"s","т":"t","у":"u","ф":"f","х":"kh","ц":"ts",
+    "ч":"ch","ш":"sh","щ":"sch","ъ":"","ы":"y","ь":"","э":"e","ю":"yu","я":"ya",
+}
+
+def _translit(s: str) -> str:
+    return "".join(_RU_MAP.get(c.lower(), c) for c in s)
+
+def slugify(text: str, max_len: int = 50) -> str:
+    words = re.findall(r"[A-Za-zА-Яа-яЁё0-9]+", text)
+    if not words:
+        return "Control"
+    result = "".join(_translit(w).capitalize() for w in words)
+    result = re.sub(r"[^A-Za-z0-9]", "", result)
+    return result[:max_len] or "Control"
+
+# Суффиксы для разрешения конфликтов типов контролов
+CTRL_SUFFIX = {
+    "TextBlock":          "Title",
+    "Button":             "Btn",
+    "ComboBoxItem":       "Item",
+    "ToggleSwitch":       "Toggle",
+    "NavigationViewItem": "Nav",
+    "AppBarButton":       "AppBtn",
+    "CheckBox":           "Check",
+    "RadioButton":        "Radio",
+    "HyperlinkButton":    "Link",
+}
+
+def make_uid(elem: ET.Element, control: str, used: set, uid_ctrl: dict) -> str:
+    """
+    uid_ctrl: { uid -> control_type } — карта уже выданных uid и их типов.
+    Если base уже занят контролом ДРУГОГО типа — добавляем суффикс типа,
+    чтобы избежать конфликта .Text vs .Content в .resw.
+    Например: Nastroyki занят NavigationViewItem, новый TextBlock
+    → генерируем NastroykiTitle.
+    """
+    # 1) x:Name
+    base = elem.get(X_NAME) or elem.get("x:Name", "")
+
+    # 2) Текст первого непустого атрибута
+    if not base:
+        for attr in CONTROL_TEXT_ATTR.get(control, []):
+            val = elem.get(attr, "").strip()
+            if val and not val.startswith("{"):
+                base = slugify(val)
+                break
+
+    # 3) Запасной вариант
+    if not base:
+        base = control
+
+    # Если base уже занят контролом другого типа — добавляем суффикс
+    if base in uid_ctrl and uid_ctrl[base] != control:
+        suffix = CTRL_SUFFIX.get(control, control)
+        base = f"{base}{suffix}"
+
+    uid = base
+    n = 1
+    while uid in used:
+        uid = f"{base}{n}"
+        n += 1
+    used.add(uid)
+    uid_ctrl[uid] = control
+    return uid
+
+# ─── Вставка x:Uid в сырой текст XAML ────────────────────────────────────────
+
+def inject_xuid(xaml: str, elem: ET.Element, control: str, uid: str) -> str:
+    """
+    Находит нужный открывающий тег в тексте и вставляет x:Uid="..."
+    сразу после имени тега. Форматирование остального кода не трогает.
+    """
+    xname = elem.get(X_NAME) or elem.get("x:Name", "")
+
+    # Паттерн открывающего тега (с учётом возможного namespace-префикса)
+    tag_re = re.compile(
+        r'<(?:\w+:)?' + re.escape(control) + r'(?=[\s/>])'
+    )
+
+    for m in tag_re.finditer(xaml):
+        # Ищем конец атрибутов тега (до > или />)
+        i = m.start()
+        depth = 0
+        end = i
+        while end < len(xaml):
+            ch = xaml[end]
+            if ch == '"':   # пропускаем строковые значения
+                end += 1
+                while end < len(xaml) and xaml[end] != '"':
+                    end += 1
+            elif ch in (">", "/") and (ch == ">" or (end + 1 < len(xaml) and xaml[end + 1] == ">")):
+                break
+            end += 1
+
+        tag_slice = xaml[i:end]
+
+        # Пропускаем если уже есть x:Uid
+        if "x:Uid" in tag_slice:
+            continue
+
+        # Если у нас есть x:Name — убеждаемся, что этот тег содержит нужный Name
+        if xname and f'"{xname}"' not in tag_slice:
+            continue
+
+        insert_pos = m.end()
+        return xaml[:insert_pos] + f' x:Uid="{uid}"' + xaml[insert_pos:]
+
+    return xaml  # тег не найден — возвращаем без изменений
+
+# ─── Обработка одного XAML файла ─────────────────────────────────────────────
+
+def process_xaml(
+    path: Path,
+    controls: list,
+    used_uids: set,
+    uid_ctrl: dict,
+    dry: bool,
+) -> list:
+    """
+    Возвращает список (uid, resw_key, value).
+    """
+    text = path.read_text(encoding="utf-8-sig")  # utf-8-sig убирает BOM
+
+    # Регистрируем все xmlns для корректной работы ET
+    for prefix, uri in re.findall(r'xmlns(?::(\w+))?="([^"]+)"', text):
+        try:
+            ET.register_namespace(prefix or "", uri)
+        except ValueError:
+            pass
+    ET.register_namespace("x", X_NS)
+
+    try:
+        root = ET.fromstring(text)
+    except ET.ParseError as e:
+        print(f"  [!] ParseError в {path.name}: {e}", file=sys.stderr)
+        return []
+
+    entries = []
+    modified = False
+
+    for elem in root.iter():
+        local = elem.tag.split("}")[-1] if "}" in elem.tag else elem.tag
+        if local not in controls:
+            continue
+
+        existing_uid = elem.get(X_UID) or elem.get("x:Uid")
+
+        if existing_uid:
+            uid = existing_uid
+        else:
+            uid = make_uid(elem, local, used_uids, uid_ctrl)
+            new_text = inject_xuid(text, elem, local, uid)
+            if new_text != text:
+                text = new_text
+                modified = True
+            else:
+                print(f"    [warn] не удалось вставить x:Uid для {local} (uid={uid})")
+
+        for attr in CONTROL_TEXT_ATTR.get(local, []):
+            val = elem.get(attr, "").strip()
+            if val and not val.startswith("{"):
+                entries.append((uid, f"{uid}.{attr}", val))
+
+    status = "✏  Изменён" if modified else "✓  Без изменений"
+    if dry:
+        status = "~  [dry] " + ("будет изменён" if modified else "без изменений")
+
+    print(f"  {status}: {path.name}  ({len(entries)} строк)")
+
+    if modified and not dry:
+        path.write_text(text, encoding="utf-8")
+
+    return entries
+
+# ─── Обработка Resources.resw ─────────────────────────────────────────────────
+
+RESW_SKELETON = (
+    '<?xml version="1.0" encoding="utf-8"?>\n'
+    "<root>\n"
+    '  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"\n'
+    '              xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">\n'
+    '    <xsd:element name="root" msdata:IsDataSet="true"/>\n'
+    "  </xsd:schema>\n"
+    '  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>\n'
+    '  <resheader name="version"><value>2.0</value></resheader>\n'
+    "</root>\n"
+)
+
+def update_resw(resw_path: Path, entries: list, dry: bool) -> int:
+    file_ok = resw_path.exists() and resw_path.stat().st_size > 0
+    if file_ok:
+        try:
+            tree = ET.parse(resw_path)
+            root = tree.getroot()
+        except ET.ParseError:
+            file_ok = False
+
+    if not file_ok:
+        root = ET.fromstring(RESW_SKELETON)
+        tree = ET.ElementTree(root)
+
+    existing = {d.get("name") for d in root.findall("data")}
+    added = 0
+
+    for _uid, key, value in entries:
+        if key in existing:
+            continue
+        data = ET.SubElement(root, "data")
+        data.set("name", key)
+        data.set("xml:space", "preserve")
+        ET.SubElement(data, "value").text = value
+        existing.add(key)
+        added += 1
+
+    if dry:
+        print(f"  [dry] {resw_path.name}: +{added} новых строк")
+        return added
+
+    if added:
+        ET.indent(tree, space="  ")
+        resw_path.parent.mkdir(parents=True, exist_ok=True)
+        tree.write(resw_path, encoding="utf-8", xml_declaration=True)
+        print(f"  ✏  +{added} строк → {resw_path}")
+    else:
+        print(f"  ✓  Без изменений: {resw_path}")
+
+    return added
+
+
+# ─── Перевод ──────────────────────────────────────────────────────────────────
+
+def _is_translatable(text: str) -> bool:
+    """Пропускаем пустые строки, чисто эмодзи/символы без букв."""
+    return bool(text.strip()) and any(c.isalpha() for c in text)
+
+
+def translate_google(texts: list, target_lang: str = "en") -> list:
+    """Google Translate через deep-translator. pip install deep-translator"""
+    try:
+        from deep_translator import GoogleTranslator
+    except ImportError:
+        print("  [!] Установите: pip install deep-translator")
+        return texts
+
+    tr = GoogleTranslator(source="ru", target=target_lang)
+    result = []
+    for text in texts:
+        try:
+            result.append(tr.translate(text) if _is_translatable(text) else text)
+        except Exception as e:
+            print(f"  [warn] Google: {text!r} → {e}")
+            result.append(text)
+    return result
+
+
+def translate_ollama(
+    texts: list,
+    model: str = "llama3.1:8b",
+    target_lang: str = "English",
+    url: str = "http://localhost:11434",
+) -> list:
+    """Переводит весь список одним запросом к Ollama."""
+    import urllib.request
+    import urllib.error
+
+    numbered = chr(10).join(f"{i+1}. {t}" for i, t in enumerate(texts))
+    prompt = (
+        f"You are a professional UI translator. "
+        f"Translate these Russian desktop app strings to {target_lang}.\n"
+        "Rules:\n"
+        "- Short and natural for a desktop app UI\n"
+        "- Preserve special characters (arrows, emoji) exactly as-is\n"
+        "- Do NOT translate: ZapretGUI, zapret, WinDivert, Windows\n"
+        "- Return ONLY a numbered list in the exact same format, nothing else\n\n"
+        f"Strings:\n{numbered}"
+    )
+
+    body = json.dumps({
+        "model": model,
+        "prompt": prompt,
+        "stream": False,
+        "options": {"temperature": 0.1},
+    }).encode("utf-8")
+
+    try:
+        req = urllib.request.Request(
+            f"{url}/api/generate",
+            data=body,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=180) as resp:
+            raw = json.loads(resp.read()).get("response", "").strip()
+
+        result = []
+        for i, original in enumerate(texts):
+            m = re.search(rf"^{i+1}[.)\s]+(.+)$", raw, re.MULTILINE)
+            result.append(m.group(1).strip() if m else original)
+        return result
+
+    except urllib.error.URLError:
+        print(f"  [!] Ollama недоступен ({url}). Запустите: ollama serve")
+        return texts
+    except Exception as e:
+        print(f"  [!] Ошибка Ollama: {e}")
+        return texts
+
+
+LANG_NAMES = {
+    "en": "English", "de": "German", "fr": "French",
+    "zh": "Chinese", "es": "Spanish", "tr": "Turkish",
+}
+
+
+def apply_translation(
+    entries: list,
+    target_lang: str = "en",
+    engine: str = "google",
+    ollama_model: str = "llama3.1:8b",
+    ollama_url: str = "http://localhost:11434",
+) -> list:
+    """Переводит entries[(uid, key, value)] и возвращает с переведёнными values."""
+    values = [v for _, _, v in entries]
+    print(f"  🌐 Переводим {len(values)} строк [{engine}]...")
+
+    if engine == "ollama":
+        lang = LANG_NAMES.get(target_lang, target_lang)
+        translated = translate_ollama(values, ollama_model, lang, ollama_url)
+    else:
+        BATCH = 50
+        translated = []
+        for i in range(0, len(values), BATCH):
+            chunk = values[i:i + BATCH]
+            n, total = i // BATCH + 1, (len(values) + BATCH - 1) // BATCH
+            print(f"     пакет {n}/{total} ({len(chunk)} строк)...")
+            translated.extend(translate_google(chunk, target_lang))
+
+    return [(uid, key, tr) for (uid, key, _), tr in zip(entries, translated)]
+
+
+def find_untranslated(en_resw: Path, ru_resw: Path) -> dict:
+    """
+    Возвращает {key: ru_value} для ключей где en == ru (перевод не был сделан)
+    или ключ вообще отсутствует в en-US.
+    """
+    def load(path):
+        if not path.exists() or path.stat().st_size == 0:
+            return {}
+        try:
+            import xml.etree.ElementTree as _ET
+            tree = _ET.parse(path)
+            return {d.get("name"): (d.findtext("value") or "").strip()
+                    for d in tree.getroot().findall("data")}
+        except Exception:
+            return {}
+
+    ru = load(ru_resw)
+    en = load(en_resw)
+    return {k: v for k, v in ru.items() if en.get(k) is None or en.get(k) == v}
+
+
+def update_existing_translations(resw_path: Path, updates: dict) -> None:
+    """Обновляет значения уже существующих ключей в .resw."""
+    if not updates or not resw_path.exists():
+        return
+    try:
+        tree = ET.parse(resw_path)
+        root = tree.getroot()
+        changed = 0
+        for data in root.findall("data"):
+            key = data.get("name", "")
+            if key in updates:
+                val = data.find("value")
+                if val is not None:
+                    val.text = updates[key]
+                    changed += 1
+        if changed:
+            ET.indent(tree, space="  ")
+            tree.write(resw_path, encoding="utf-8", xml_declaration=True)
+            print(f"  ✏  Обновлено {changed} переводов → {resw_path.name}")
+    except Exception as e:
+        print(f"  [!] Ошибка обновления {resw_path.name}: {e}")
+
+
+# ─── main ─────────────────────────────────────────────────────────────────────
+
+def main():
+    ap = argparse.ArgumentParser(description="XAML x:Uid + .resw generator")
+    ap.add_argument("--root",     required=True, help="Корень проекта")
+    ap.add_argument("--resw",     default=None,
+                    help="Пути к .resw через запятую. "
+                         "По умолчанию: Strings/ru-RU/Resources.resw, Strings/en-US/Resources.resw")
+    ap.add_argument("--dry",      action="store_true", help="Просмотр без изменений")
+    ap.add_argument("--controls", default=",".join(DEFAULT_CONTROLS),
+                    help="Контролы через запятую")
+    ap.add_argument("--translate", default=None,
+                    help="Локали для перевода через запятую, например: en-US")
+    ap.add_argument("--retranslate", action="store_true",
+                    help="Переводить заново строки где en-US == ru-RU")
+    ap.add_argument("--engine", default="google", choices=["google", "ollama"],
+                    help="Движок перевода: google или ollama (по умолчанию: google)")
+    ap.add_argument("--ollama-model", default="llama3.1:8b",
+                    help="Модель Ollama (по умолчанию: llama3.1:8b)")
+    ap.add_argument("--ollama-url", default="http://localhost:11434",
+                    help="URL Ollama")
+    args = ap.parse_args()
+
+    root_dir = Path(args.root)
+    controls = [c.strip() for c in args.controls.split(",") if c.strip()]
+
+    if args.resw:
+        resw_paths = [Path(p.strip()) for p in args.resw.split(",")]
+    else:
+        resw_paths = [
+            root_dir / "Strings" / "ru-RU" / "Resources.resw",
+            root_dir / "Strings" / "en-US" / "Resources.resw",
+        ]
+
+    print(f"📁 Корень:    {root_dir.resolve()}")
+    for p in resw_paths:
+        print(f"📄 .resw:     {p}")
+    if args.dry:
+        print("⚠️  DRY-RUN\n")
+    print()
+
+    SKIP_DIRS = {"obj", "bin", ".vs", "packages"}
+    xaml_files = sorted(
+        p for p in root_dir.rglob("*.xaml")
+        if not any(part in SKIP_DIRS for part in p.relative_to(root_dir).parts)
+    )
+    if not xaml_files:
+        print("Файлы .xaml не найдены.")
+        return
+
+    used_uids: set = set()
+    uid_ctrl: dict = {}
+    all_entries: list = []
+
+    for xaml_path in xaml_files:
+        rel = xaml_path.relative_to(root_dir)
+        print(f"📄 {rel}")
+        all_entries.extend(process_xaml(xaml_path, controls, used_uids, uid_ctrl, args.dry))
+
+    print(f"\n{'─'*55}")
+    print(f"Файлов:         {len(xaml_files)}")
+    print(f"Строк для .resw: {len(all_entries)}")
+    print()
+
+    translate_locales: set = set()
+    if args.translate:
+        translate_locales = {t.strip() for t in args.translate.split(',') if t.strip()}
+
+    ru_resw = next((p for p in resw_paths if 'ru-RU' in str(p)), None)
+
+    for resw_path in resw_paths:
+        locale = resw_path.parent.name
+        lang_code = locale.split('-')[0]
+        needs_tr = bool(translate_locales and locale in translate_locales)
+
+        if needs_tr and args.dry:
+            print(f'  [dry] Перевод для {locale} будет выполнен при реальном запуске [{args.engine}]')
+            update_resw(resw_path, all_entries, args.dry)
+            continue
+
+        if needs_tr and not args.dry:
+            # Новые строки
+            existing = set()
+            if resw_path.exists() and resw_path.stat().st_size > 0:
+                try:
+                    existing = {d.get('name') for d in ET.parse(resw_path).getroot().findall('data')}
+                except Exception:
+                    pass
+            new_entries = [(u, k, v) for u, k, v in all_entries if k not in existing]
+
+            # --retranslate: ищем непереведённые существующие строки
+            retranslate_entries = []
+            if args.retranslate and ru_resw and ru_resw != resw_path:
+                untranslated = find_untranslated(resw_path, ru_resw)
+                retranslate_entries = [
+                    (k.split('.')[0], k, v) for k, v in untranslated.items()
+                    if k not in {ke for _, ke, _ in new_entries}
+                ]
+                if retranslate_entries:
+                    print(f'  🔄 Непереведённых строк: {len(retranslate_entries)}')
+
+            if new_entries:
+                tr_new = apply_translation(new_entries, lang_code, args.engine,
+                                           args.ollama_model, args.ollama_url)
+                update_resw(resw_path, tr_new, args.dry)
+            else:
+                update_resw(resw_path, all_entries, args.dry)
+
+            if retranslate_entries:
+                tr_old = apply_translation(retranslate_entries, lang_code, args.engine,
+                                           args.ollama_model, args.ollama_url)
+                update_existing_translations(resw_path, {k: v for _, k, v in tr_old})
+        else:
+            update_resw(resw_path, all_entries, args.dry)
+
+    print("\n✅ Готово!")
+
+if __name__ == "__main__":
+    main()

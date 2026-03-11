@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__plugin_serena_serena__list_dir",
+      "mcp__plugin_serena_serena__get_symbols_overview",
+      "mcp__plugin_serena_serena__read_file",
+      "mcp__plugin_serena_serena__activate_project",
+      "Bash(dir \"Assets\\\\Z-UI-512x512.png\" /b)",
+      "mcp__plugin_context7_context7__query-docs",
+      "Bash(dotnet build:*)",
+      "Bash(dir Assets)",
+      "Bash(dotnet run:*)",
+      "Bash(pwsh -Command \"Start-Process -FilePath ''bin/Debug/net10.0-windows10.0.19041.0/ZapretGUI.exe'' -Verb RunAs\")"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\SKLLFI.DESKTOP-PJ6BFTT\\Downloads\\fluent-icons-tools\\fluent-icons-tools\\icons"
+    ]
+  }
+}

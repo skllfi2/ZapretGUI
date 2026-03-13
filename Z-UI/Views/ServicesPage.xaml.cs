@@ -16,7 +16,6 @@ using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.UI;
-using ZUI.Animations;
 using ZUI.Services;
 
 namespace ZUI.Views
@@ -225,17 +224,6 @@ namespace ZUI.Views
         };
 
         // ── Тестирование ──────────────────────────────────────────────
-        private static readonly (string Name, string Url)[] TestTargets =
-        [
-            ("Discord", "https://discord.com"),
-            ("YouTube", "https://youtube.com"),
-            ("Google",  "https://google.com"),
-        ];
-
-        private Process?                    _testProcess;
-        private StreamWriter?               _testStdin;
-        private TaskCompletionSource<string>? _pendingInput;
-        private CancellationTokenSource?    _testCts;
 
         // ─────────────────────────────────────────────────────────────
 
@@ -243,18 +231,22 @@ namespace ZUI.Views
         {
             this.InitializeComponent();
 
-            // Анимации кнопок
-            this.Loaded += (s, e) =>
-            {
-                ButtonAnimator.Attach(CheckVersionButton);
-                ButtonAnimator.Attach(UpdateIpsetButton);
-                ButtonAnimator.Attach(UpdateHostsButton);
-                ButtonAnimator.Attach(RunTestButton);
-            };
+            InitTestingTab();
+
+            // Перенос строк по тогглу
+            LogsWrapButton.Checked   += (_, _) => LogsTextBox.TextWrapping = TextWrapping.Wrap;
+            LogsWrapButton.Unchecked += (_, _) => LogsTextBox.TextWrapping = TextWrapping.NoWrap;
+
+            // Кнопка копирования
+            LogsCopyButton.Click += CopyLogs_Click;
 
             foreach (var line in AppState.Logs)
                 LogsTextBox.Text += line + "\n";
             AppState.WinwsService.LogReceived += OnLogReceived;
+
+            // Начальный счётчик строк
+            var initLines = LogsTextBox.Text.Split('\n').Length - 1;
+            LogsLineCountText.Text = $"{initLines} строк";
 
             // Диагностика запускается при переключении на вкладку 2 (не изменилась)
             // Обновления инициализируются при переключении на вкладку 0
@@ -293,7 +285,14 @@ namespace ZUI.Views
             DispatcherQueue.TryEnqueue(() =>
             {
                 LogsTextBox.Text += message + "\n";
-                LogsScrollViewer.ChangeView(null, LogsScrollViewer.ScrollableHeight, null);
+
+                // Обновляем счётчик строк
+                var lines = LogsTextBox.Text.Split('\n').Length - 1;
+                LogsLineCountText.Text = $"{lines} строк";
+
+                // Авто-прокрутка только если включена
+                if (LogsAutoScrollButton.IsChecked == true)
+                    LogsScrollViewer.ChangeView(null, LogsScrollViewer.ScrollableHeight, null);
             });
         }
 
@@ -301,483 +300,33 @@ namespace ZUI.Views
         {
             AppState.Logs.Clear();
             LogsTextBox.Text = string.Empty;
+            LogsLineCountText.Text = "0 строк";
         }
 
-        private async void SaveLogs_Click(object sender, RoutedEventArgs e) =>
-            await SaveTextToFile(LogsTextBox.Text, $"zapret_logs_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}");
-
-        // ══════════════════════════════════════════════════════════════
-        // ТЕСТИРОВАНИЕ
-        // ══════════════════════════════════════════════════════════════
-
-        private void ClearTest_Click(object sender, RoutedEventArgs e) => TestOutputBox.Text = string.Empty;
-        private async void SaveTest_Click(object sender, RoutedEventArgs e) =>
-            await SaveTextToFile(TestOutputBox.Text, $"zapret_test_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}");
-
-        private void StopTest_Click(object sender, RoutedEventArgs e)
-        {
-            _testCts?.Cancel();
-            try { _testProcess?.Kill(entireProcessTree: true); } catch { }
-            AppendTest("[ТЕСТ] Остановлено пользователем");
-            SetTestIdle();
-        }
-
-        private async void RunTest_Click(object sender, RoutedEventArgs e)
-        {
-            SetTestRunning();
-            TestOutputBox.Text = string.Empty;
-            AppendTest("─────────────────────────────────");
-            AppendTest($"[ТЕСТ] Запуск ({DateTime.Now:HH:mm:ss})");
-            AppendTest($"[ТЕСТ] Защита: {(AppState.WinwsService.IsRunning ? "АКТИВНА" : "ОСТАНОВЛЕНА")}");
-            AppendTest("─────────────────────────────────");
-
-            bool serviceWasInstalled = ServiceManager.IsInstalled();
-            string? serviceStrategy = null;
-            if (serviceWasInstalled)
-            {
-                serviceStrategy = ServiceManager.GetInstalledStrategy();
-                AppendTest($"[ТЕСТ] Служба установлена ({serviceStrategy}), временно удаляю...");
-                await ServiceManager.RemoveAsync(l => AppendTest("[SVC] " + l));
-            }
-
-            var psScript  = Path.Combine(ZapretPaths.UtilsDir, "test_zapret.ps1");
-            var psScript2 = Path.Combine(ZapretPaths.UtilsDir, "test zapret.ps1");
-
-            if (File.Exists(psScript) || File.Exists(psScript2))
-            {
-                var script = File.Exists(psScript) ? psScript : psScript2;
-                AppendTest($"[ТЕСТ] Скрипт: {Path.GetFileName(script)}");
-                await RunInteractivePsAsync(script);
-            }
-            else
-            {
-                AppendTest("[ТЕСТ] Скрипт не найден — встроенная проверка");
-                await RunBuiltinTestAsync();
-            }
-
-            if (serviceWasInstalled)
-            {
-                AppendTest("[ТЕСТ] Восстанавливаю службу...");
-                var strategy = serviceStrategy ?? AppState.CurrentStrategy;
-                var batFile = Path.Combine(ZapretPaths.StrategiesDir, strategy + ".bat");
-                var args = BatStrategyParser.ParseStrategy(batFile);
-                if (args != null)
-                {
-                    await ServiceManager.InstallAsync(strategy, args, l => AppendTest("[SVC] " + l));
-                    AppendTest("[ТЕСТ] Служба восстановлена");
-                }
-            }
-
-            AppendTest("─────────────────────────────────");
-            SetTestIdle();
-        }
-
-        private async Task RunInteractivePsAsync(string scriptPath)
-        {
-            _testCts = new CancellationTokenSource();
-            var ct = _testCts.Token;
-            try
-            {
-                var scriptDir   = Path.GetDirectoryName(scriptPath)!;
-                var escapedPath = scriptPath.Replace("'", "''");
-                var wrapperLines = new[]
-                {
-                    "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8",
-                    "[Console]::InputEncoding = [System.Text.Encoding]::UTF8",
-                    $"& '{escapedPath}'",
-                };
-                var tmpWrapper = Path.Combine(Path.GetTempPath(), "zapret_test_wrapper.ps1");
-                File.WriteAllLines(tmpWrapper, wrapperLines, Encoding.UTF8);
-
-                var psi = new ProcessStartInfo
-                {
-                    FileName               = "powershell.exe",
-                    Arguments              = $"-ExecutionPolicy Bypass -File \"{tmpWrapper}\"",
-                    WorkingDirectory       = scriptDir,
-                    UseShellExecute        = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError  = true,
-                    RedirectStandardInput  = true,
-                    CreateNoWindow         = true,
-                    StandardOutputEncoding = Encoding.UTF8,
-                    StandardErrorEncoding  = Encoding.UTF8,
-                };
-
-                _testProcess = Process.Start(psi);
-                if (_testProcess == null) { AppendTest("[ТЕСТ] Не удалось запустить PowerShell"); return; }
-                _testStdin = _testProcess.StandardInput;
-
-                _ = Task.Run(async () =>
-                {
-                    string? line;
-                    while ((line = await _testProcess.StandardOutput.ReadLineAsync()) != null)
-                    {
-                        if (ct.IsCancellationRequested) break;
-                        AppendTest(line);
-                    }
-                }, ct);
-
-                _ = Task.Run(async () =>
-                {
-                    string? line;
-                    while ((line = await _testProcess.StandardError.ReadLineAsync()) != null)
-                    {
-                        if (ct.IsCancellationRequested) break;
-                        if (!line.Contains("Read-Host") && !line.Contains("InvalidOperation"))
-                            AppendTest("[ERR] " + line);
-                    }
-                }, ct);
-
-                await MonitorForPromptsAsync(_testProcess, ct);
-                if (!_testProcess.HasExited) _testProcess.WaitForExit(5000);
-            }
-            catch (OperationCanceledException) { }
-            catch (Exception ex) { AppendTest("[ТЕСТ] Ошибка: " + ex.Message); }
-        }
-
-        private async Task MonitorForPromptsAsync(Process proc, CancellationToken ct)
-        {
-            var reader     = proc.StandardOutput;
-            var lineBuffer = new StringBuilder();
-            var promptBuffer = new StringBuilder();
-            var inPrompt = false;
-
-            while (!proc.HasExited && !ct.IsCancellationRequested)
-            {
-                if (reader.Peek() < 0) { await Task.Delay(50, ct).ConfigureAwait(false); continue; }
-                int ch = reader.Read();
-                if (ch < 0) break;
-
-                if (ch == '\n')
-                {
-                    var line = lineBuffer.ToString().TrimEnd('\r');
-                    lineBuffer.Clear();
-
-                    if (inPrompt)
-                    {
-                        promptBuffer.AppendLine(line);
-                    }
-                    else
-                    {
-                        AppendTest(line);
-                    }
-                }
-                else if (ch == ':')
-                {
-                    var next = reader.Peek();
-                    if (next == ' ' || next == -1)
-                    {
-                        var promptText = lineBuffer.ToString().Trim();
-                        lineBuffer.Clear();
-                        if (next == ' ') reader.Read();
-
-                        // Проверяем, является ли это запросом
-                        if (IsPromptRequest(promptText))
-                        {
-                            inPrompt = true;
-                            promptBuffer.Clear();
-                            promptBuffer.Append(promptText).AppendLine(":");
-                        }
-                        else
-                        {
-                            AppendTest(promptText + ":");
-                        }
-                    }
-                    else
-                    {
-                        lineBuffer.Append((char)ch);
-                    }
-                }
-                else if (inPrompt && ch == '\r')
-                {
-                    // Игнорируем возврат каретки внутри запроса
-                }
-                else
-                {
-                    lineBuffer.Append((char)ch);
-                }
-
-                // Если мы в режиме запроса и получили пустую строку, завершаем запрос
-                if (inPrompt && lineBuffer.Length == 0 && promptBuffer.Length > 0)
-                {
-                    var fullPrompt = promptBuffer.ToString().Trim();
-                    promptBuffer.Clear();
-                    inPrompt = false;
-
-                    AppendTest(fullPrompt + ":");
-                    var answer = await ShowPromptAsync(fullPrompt, ct);
-                    if (!ct.IsCancellationRequested && _testStdin != null)
-                    {
-                        AppendTest($"> {answer}");
-                        await _testStdin.WriteLineAsync(answer);
-                        await _testStdin.FlushAsync();
-                    }
-                }
-            }
-
-            if (lineBuffer.Length > 0) AppendTest(lineBuffer.ToString());
-            if (promptBuffer.Length > 0) AppendTest(promptBuffer.ToString());
-        }
-
-        private bool IsPromptRequest(string text)
-        {
-            // Распознаем типичные запросы из PowerShell скрипта
-            var lower = text.ToLower();
-
-            // Запросы из Read-TestType
-            if (lower.Contains("select test type") && lower.Contains("enter 1 or 2")) return true;
-
-            // Запросы из Read-ModeSelection
-            if (lower.Contains("select test run mode") && lower.Contains("enter 1 or 2")) return true;
-
-            // Запросы из Read-ConfigSelection
-            if (lower.Contains("available configs") && lower.Contains("enter numbers")) return true;
-            if (lower.Contains("configs") && (lower.Contains("enter") || lower.Contains("numbers"))) return true;
-
-            // Простые числовые запросы
-            if (lower.Contains("enter") && (lower.Contains("1") || lower.Contains("2"))) return true;
-
-            return false;
-        }
-
-        private Task<string> ShowPromptAsync(string prompt, CancellationToken ct)
-        {
-            _pendingInput = new TaskCompletionSource<string>();
-            DispatcherQueue.TryEnqueue(() =>
-            {
-                InputPromptText.Text = prompt;
-                InputButtonsList.Items.Clear();
-                FreeInputPanel.Visibility = Visibility.Collapsed;
-
-                // Определяем тип запроса
-                var isTestType = prompt.Contains("test type") && prompt.Contains("Enter 1 or 2");
-                var isMode = prompt.Contains("mode") && prompt.Contains("Enter 1 or 2");
-                var isSimpleChoice = prompt.Contains("Enter 1 or 2");
-                var isConfigSelection = prompt.Contains("configs") || prompt.Contains("numbers") || prompt.Contains("ranges");
-
-                if (isTestType)
-                {
-                    AddInputButton("1", "Standard (HTTP/ping)");
-                    AddInputButton("2", "DPI checkers (TCP 16-20)");
-                }
-                else if (isMode)
-                {
-                    AddInputButton("1", "Все стратегии");
-                    AddInputButton("2", "Выбрать стратегии");
-                }
-                else if (isSimpleChoice)
-                {
-                    AddInputButton("1", "1");
-                    AddInputButton("2", "2");
-                }
-                else if (isConfigSelection)
-                {
-                    // Показываем примеры ввода
-                    FreeInputPanel.Visibility = Visibility.Visible;
-                    FreeInputBox.Text = "1,3,5-7,10";
-                    FreeInputBox.Focus(FocusState.Programmatic);
-
-                    // Добавляем подсказку
-                    var helpText = new TextBlock
-                    {
-                        Text = "Примеры: 1,3,5-7,10 или 2-5 или 1 3 5",
-                        FontSize = 12,
-                        Foreground = new SolidColorBrush(Microsoft.UI.Colors.Gray),
-                        Margin = new Thickness(0, 4, 0, 0)
-                    };
-                    InputButtonsList.Items.Add(helpText);
-                }
-                else
-                {
-                    // Для других запросов показываем свободный ввод
-                    FreeInputPanel.Visibility = Visibility.Visible;
-                    FreeInputBox.Text = "";
-                    FreeInputBox.Focus(FocusState.Programmatic);
-                }
-
-                InputPanel.Visibility = Visibility.Visible;
-            });
-            ct.Register(() => _pendingInput?.TrySetResult("1"));
-            return _pendingInput.Task;
-        }
-
-        private void AddInputButton(string value, string label)
-        {
-            var btn = new Button
-            {
-                Content = $"[{value}] {label}",
-                Tag = value,
-                Margin = new Thickness(4),
-                Padding = new Thickness(8, 4, 8, 4),
-                MinWidth = 120
-            };
-            btn.Click += (s, e) =>
-            {
-                HideInputPanel();
-                _pendingInput?.TrySetResult((s as Button)?.Tag?.ToString() ?? "1");
-            };
-            InputButtonsList.Items.Add(btn);
-        }
-
-        private void FreeInputBox_KeyDown(object sender, KeyRoutedEventArgs e)
-        {
-            if (e.Key == Windows.System.VirtualKey.Enter) SendFreeInput();
-        }
-        private void FreeInputSend_Click(object sender, RoutedEventArgs e) => SendFreeInput();
-        private void SendFreeInput()
-        {
-            var val = FreeInputBox.Text.Trim();
-            if (string.IsNullOrEmpty(val))
-            {
-                FreeInputBox.Text = "0";
-                return;
-            }
-
-            if (val.Contains(",") || val.Contains("-") || val.Contains(" "))
-            {
-                // Это может быть диапазон или список
-                var parsed = ParseConfigSelection(val);
-                if (parsed != null)
-                {
-                    HideInputPanel();
-                    _pendingInput?.TrySetResult(string.Join(",", parsed));
-                }
-                else
-                {
-                    FreeInputBox.Text = "0";
-                }
-            }
-            else
-            {
-                HideInputPanel();
-                _pendingInput?.TrySetResult(val);
-            }
-        }
-
-        private List<int>? ParseConfigSelection(string input)
-        {
-            var parts = input.Split(new[] { ',', ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-            var result = new List<int>();
-            var hasErrors = false;
-
-            foreach (var part in parts)
-            {
-                if (string.IsNullOrWhiteSpace(part)) continue;
-
-                if (part.Contains("-") && int.TryParse(part.Split('-')[0], out var start) && int.TryParse(part.Split('-')[1], out var end))
-                {
-                    if (start > end)
-                    {
-                        // Показываем предупреждение
-                        DispatcherQueue.TryEnqueue(() => FreeInputBox.Text = $"Ошибка: {part} (начало > конца)");
-                        hasErrors = true;
-                        continue;
-                    }
-
-                    for (int i = start; i <= end; i++) result.Add(i);
-                }
-                else if (int.TryParse(part, out var num))
-                {
-                    result.Add(num);
-                }
-                else
-                {
-                    // Показываем предупреждение
-                    DispatcherQueue.TryEnqueue(() => FreeInputBox.Text = $"Ошибка: {part} (не число)");
-                    hasErrors = true;
-                }
-            }
-
-            return hasErrors ? null : result;
-        }
-        private void HandleInputResult(string val)
-        {
-            if (string.IsNullOrEmpty(val)) val = "0";
-            HideInputPanel();
-            _pendingInput?.TrySetResult(val);
-        }
-        private static async Task SaveTextToFile(string text, string defaultFileName)
+        private async void SaveLogs_Click(object sender, RoutedEventArgs e)
         {
             var picker = new FileSavePicker
             {
                 SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
-                SuggestedFileName = defaultFileName
+                SuggestedFileName = $"zapret_logs_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}"
             };
-            picker.FileTypeChoices.Add("Текстовый файл", new List<string> { ".txt" });
+            picker.FileTypeChoices.Add("\u0422\u0435\u043a\u0441товый \u0444айл", new List<string> { ".txt" });
 
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(Window.Current);
             WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
 
             StorageFile file = await picker.PickSaveFileAsync();
             if (file != null)
-                await FileIO.WriteTextAsync(file, text);
+                await FileIO.WriteTextAsync(file, LogsTextBox.Text);
         }
 
-        private void HideInputPanel()
+        private void CopyLogs_Click(object sender, RoutedEventArgs e)
         {
-            DispatcherQueue.TryEnqueue(() =>
-            {
-                InputPanel.Visibility = Visibility.Collapsed;
-                InputButtonsList.Items.Clear();
-                FreeInputPanel.Visibility = Visibility.Collapsed;
-            });
+            var dp = new Windows.ApplicationModel.DataTransfer.DataPackage();
+            dp.SetText(LogsTextBox.Text);
+            Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dp);
         }
 
-        private async Task RunBuiltinTestAsync()
-        {
-            var results = new List<(string Name, bool Ok, long Ms)>();
-            foreach (var (name, url) in TestTargets)
-            {
-                AppendTest($"[ТЕСТ] Проверка {name}...");
-                var (ok, ms) = await CheckUrlAsync(url);
-                results.Add((name, ok, ms));
-                AppendTest($"[ТЕСТ] {name}: {(ok ? $"✓ OK ({ms} мс)" : "✗ НЕДОСТУПЕН")}");
-            }
-            int passed = 0;
-            AppendTest("\n[ТЕСТ] Итог:");
-            foreach (var (name, ok, ms) in results) { AppendTest($"  {(ok ? "✓" : "✗")} {name}"); if (ok) passed++; }
-            AppendTest($"[ТЕСТ] Прошло: {passed}/{results.Count}");
-            DispatcherQueue.TryEnqueue(() => TestStatusText.Text = $"Прошло: {passed}/{results.Count}");
-        }
-
-        private static async Task<(bool Ok, long Ms)> CheckUrlAsync(string url)
-        {
-            try
-            {
-                var sw   = Stopwatch.StartNew();
-                var resp = await _http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
-                sw.Stop();
-                return (resp.IsSuccessStatusCode || (int)resp.StatusCode < 500, sw.ElapsedMilliseconds);
-            }
-            catch { return (false, 0); }
-        }
-
-        private void SetTestRunning()
-        {
-            DispatcherQueue.TryEnqueue(() =>
-            {
-                RunTestButton.IsEnabled = false;
-                StopTestButton.Visibility = Visibility.Visible;
-                TestProgressRing.IsActive = true;
-                TestStatusText.Text = "Тестирование...";
-            });
-        }
-
-        private void SetTestIdle()
-        {
-            DispatcherQueue.TryEnqueue(() =>
-            {
-                RunTestButton.IsEnabled = true;
-                StopTestButton.Visibility = Visibility.Collapsed;
-                TestProgressRing.IsActive = false;
-                TestStatusText.Text = "Готово";
-                HideInputPanel();
-                TestScrollViewer.ChangeView(null, TestScrollViewer.ScrollableHeight, null);
-            });
-        }
-
-        private void AppendTest(string text) =>
-            DispatcherQueue.TryEnqueue(() => TestOutputBox.Text += text + "\n");
 
         // ══════════════════════════════════════════════════════════════
         // ДИАГНОСТИКА
@@ -792,7 +341,10 @@ namespace ZUI.Views
             DispatcherQueue.TryEnqueue(() =>
             {
                 ChecksList.Children.Clear();
-                SummaryBar.IsOpen = false;
+                SummaryBar.IsOpen     = false;
+                DiagSubtitleText.Text = "Выполняется проверка...";
+                DiagPassCount.Text    = "0";
+                DiagFailCount.Text    = "0";
                 ChecksList.Children.Add(new ProgressRing { IsActive = true, Width = 32, Height = 32, Margin = new Thickness(16) });
             });
 
@@ -803,6 +355,14 @@ namespace ZUI.Views
                 ChecksList.Children.Clear();
                 int passed = 0;
                 foreach (var r in results) { if (r.Ok) passed++; ChecksList.Children.Add(BuildCheckRow(r)); }
+
+                int failed = results.Count - passed;
+                DiagPassCount.Text    = passed.ToString();
+                DiagFailCount.Text    = failed.ToString();
+                DiagSubtitleText.Text = passed == results.Count
+                    ? $"Все проверки пройдены · {results.Count} компонентов"
+                    : $"{failed} проблем из {results.Count}";
+
                 SummaryBar.IsOpen = true;
                 if (passed == results.Count)
                 {

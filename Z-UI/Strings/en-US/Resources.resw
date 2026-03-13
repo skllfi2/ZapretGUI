@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:schema id="root">
     <xs:element name="root" ns1:IsDataSet="true" />
@@ -72,35 +72,17 @@
   <data name="VyberiteSvetluyuTyomnuyuIliSistemnuyuTemu.Text" xml:space="preserve">
     <value>Choose light, dark or system theme</value>
   </data>
-  <data name="Sistemnaya.Content" xml:space="preserve">
-    <value>System</value>
-  </data>
   <data name="Svetlaya.Content" xml:space="preserve">
     <value>Light</value>
   </data>
   <data name="Tyomnaya.Content" xml:space="preserve">
     <value>Dark</value>
   </data>
-  <data name="Yazyk.Text" xml:space="preserve">
-    <value>Language</value>
-  </data>
-  <data name="YazykInterfeysaPrilozheniya.Text" xml:space="preserve">
-    <value>Interface language</value>
-  </data>
   <data name="Russkiy.Content" xml:space="preserve">
     <value>Russian</value>
   </data>
   <data name="English.Content" xml:space="preserve">
     <value>English</value>
-  </data>
-  <data name="Uvedomleniya.Text" xml:space="preserve">
-    <value>Notifications</value>
-  </data>
-  <data name="ZvukovyeEffekty.Text" xml:space="preserve">
-    <value>Sound effects</value>
-  </data>
-  <data name="ZvukPriZapuskeIOstanovkeZaschity.Text" xml:space="preserve">
-    <value>Sound on launch and stop of protection</value>
   </data>
   <data name="VsplyvayuschieUvedomleniya.Text" xml:space="preserve">
     <value>Pop-up notifications</value>
@@ -180,23 +162,11 @@
   <data name="PereytiKObnovleniyam.Content" xml:space="preserve">
     <value>Go to updates →</value>
   </data>
-  <data name="Sokhranit.Content" xml:space="preserve">
-    <value>💾 Save</value>
-  </data>
-  <data name="FreeInputBox.PlaceholderText" xml:space="preserve">
-    <value>Enter response...</value>
-  </data>
-  <data name="Otpravit.Content" xml:space="preserve">
-    <value>Send</value>
-  </data>
   <data name="RunTestButton.Content" xml:space="preserve">
     <value>▶ Run test</value>
   </data>
   <data name="StopTestButton.Content" xml:space="preserve">
     <value>⏹ Stop</value>
-  </data>
-  <data name="Ochistit.Content" xml:space="preserve">
-    <value>Clear</value>
   </data>
   <data name="AvtoproverkaObnovleniy.Text" xml:space="preserve">
     <value>Auto-update checks</value>
@@ -381,36 +351,6 @@
   <data name="UpdateProgressLabel.Text" xml:space="preserve">
     <value>Updating...</value>
   </data>
-  <data name="ProveritSnova.Content" xml:space="preserve">
-    <value>🔄  Check again</value>
-  </data>
-  <data name="Animatsii.Text" xml:space="preserve">
-    <value>Animations</value>
-  </data>
-  <data name="AnimatsiiElementov.Text" xml:space="preserve">
-    <value>Element animations</value>
-  </data>
-  <data name="AnimSummaryText.Text" xml:space="preserve">
-    <value>All categories are included</value>
-  </data>
-  <data name="IkonkiNavigatsii.Text" xml:space="preserve">
-    <value>Navigation icons</value>
-  </data>
-  <data name="AnimatsiyaPriNazhatiiNaPunktyMenyu.Text" xml:space="preserve">
-    <value>Menu item click animation</value>
-  </data>
-  <data name="Knopki.Text" xml:space="preserve">
-    <value>Buttons</value>
-  </data>
-  <data name="OtklikKnopokPriNazhatiiZapustitProveritIDr.Text" xml:space="preserve">
-    <value>Button feedback on click (Run, Check etc.)</value>
-  </data>
-  <data name="KartochkiIIkonkiServisov.Text" xml:space="preserve">
-    <value>Cards and service icons</value>
-  </data>
-  <data name="HoverINazhatieNaKartochkiNaGlavnoyStranitse.Text" xml:space="preserve">
-    <value>Hover and card clicks on the home page</value>
-  </data>
   <data name="OProgramme.Text" xml:space="preserve">
     <value>About the program</value>
   </data>
@@ -430,7 +370,7 @@
     <value>4</value>
   </data>
   <data name="5.Text" xml:space="preserve">
-    <value>5</value>
+    <value>Z-UI</value>
   </data>
   <data name="DobroPozhalovatVZUI.Text" xml:space="preserve">
     <value>Welcome to Z-UI</value>
@@ -489,9 +429,6 @@
   <data name="AktivnayaStrategiya.Text" xml:space="preserve">
     <value>Active strategy</value>
   </data>
-  <data name="Control.Content" xml:space="preserve">
-    <value>→</value>
-  </data>
   <data name="ZapustitMasterNastroyki.Content" xml:space="preserve">
     <value>Launch settings wizard</value>
   </data>
@@ -510,7 +447,121 @@
   <data name="WizardSkipButton.Content" xml:space="preserve">
     <value>Skip</value>
   </data>
-  <data name="Zui2.Text" xml:space="preserve">
-    <value>Z-UI</value>
+  <data name="SettingsNavItem.Content" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="ControlLink.Content" xml:space="preserve">
+    <value>HTTP + Ping</value>
+  </data>
+  <data name="Rezhim.Text" xml:space="preserve">
+    <value>Mode</value>
+  </data>
+  <data name="ModeStandard.Content" xml:space="preserve">
+    <value>DPI 16-20 KB</value>
+  </data>
+  <data name="ModeDpi.Content" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="SelectedCountText.Text" xml:space="preserve">
+    <value>0 selected</value>
+  </data>
+  <data name="StrategiesDropDownLabel.Text" xml:space="preserve">
+    <value>Select strategies</value>
+  </data>
+  <data name="StrategiesBadgeText.Text" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="SelectAllStrategiesBtn.Content" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="ClearAllStrategiesBtn.Content" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="ZapustitTest.Text" xml:space="preserve">
+    <value>Run test</value>
+  </data>
+  <data name="Ostanovit.Text" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+  <data name="ProgressConfigText.Text" xml:space="preserve">
+    <value>Preparing...</value>
+  </data>
+  <data name="ApplyBestButton.Content" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="ProverkiKomponentov.Text" xml:space="preserve">
+    <value>Component checks</value>
+  </data>
+  <data name="DiagSubtitleText.Text" xml:space="preserve">
+    <value>Checking...</value>
+  </data>
+  <data name="DiagPassCount.Text" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="DiagFailCount.Text" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="DiagHintText.Text" xml:space="preserve">
+    <value>Checks for all necessary files and services</value>
+  </data>
+  <data name="ProveritSnova.Text" xml:space="preserve">
+    <value>Check again</value>
+  </data>
+  <data name="SistemnyyZhurnal.Text" xml:space="preserve">
+    <value>System log</value>
+  </data>
+  <data name="LogsLineCountText.Text" xml:space="preserve">
+    <value>0 lines</value>
+  </data>
+  <data name="LogsLastUpdatedText.Text" xml:space="preserve">
+    <value>Updates in real time</value>
+  </data>
+  <data name="Ochistit.Text" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="Sokhranit.Text" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Sistemno.Content" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="YazikPrilozheniya.Text" xml:space="preserve">
+    <value>Application language</value>
+  </data>
+  <data name="PerezapuskaetInterfeysDlyaSmenyYazika.Text" xml:space="preserve">
+    <value>Reboot interface to change language</value>
+  </data>
+  <data name="ZvukovyeEfekty.Text" xml:space="preserve">
+    <value>Sound effects</value>
+  </data>
+  <data name="VosproizvoditZvukPriIzmeneniiStatusa.Text" xml:space="preserve">
+    <value>Play sound on status change</value>
+  </data>
+  <data name="MasterUstanovki.Text" xml:space="preserve">
+    <value>Setup wizard</value>
+  </data>
+  <data name="ZapustitMasteraUstanovki.Text" xml:space="preserve">
+    <value>Run setup wizard</value>
+  </data>
+  <data name="PovtoritNastroyku.Text" xml:space="preserve">
+    <value>Repeat initial app setup</value>
+  </data>
+  <data name="SetupWizardButton.Content" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="StrategyCountText.Text" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="VyberiteStrategiyu.Text" xml:space="preserve">
+    <value>Select a strategy</value>
+  </data>
+  <data name="NazhmiteNaLyubuyuStrategiyuVSpiskeSleva.Text" xml:space="preserve">
+    <value>Click any strategy in the left list</value>
+  </data>
+  <data name="ZuiAbout.Text" xml:space="preserve">
+    <value>ZUI</value>
+  </data>
+  <data name="ZUIopr.Text" xml:space="preserve">
+    <value>ZUI</value>
   </data>
 </root>

@@ -7,7 +7,6 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Windows.UI;
-using ZUI.Animations;
 using ZUI.Services;
 
 namespace ZUI.Views
@@ -23,12 +22,7 @@ namespace ZUI.Views
             this.Loaded += (s, e) =>
             {
                 // Анимации кнопок
-                ButtonAnimator.Attach(ToggleButton);
 
-                // Анимации карточек сервисов (pulse при нажатии)
-                ButtonAnimator.AttachToIcon(DiscordIndicator, "pulse");
-                ButtonAnimator.AttachToIcon(YoutubeIndicator, "pulse");
-                ButtonAnimator.AttachToIcon(GoogleIndicator,  "pulse");
 
                 SetupRequiredBar.IsOpen = !System.IO.File.Exists(ZapretPaths.WinwsExe);
                 UpdateStatus();

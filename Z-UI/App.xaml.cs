@@ -17,6 +17,9 @@ namespace ZUI
 
         public static TrayIcon? TrayIcon { get; private set; }
 
+        /// <summary>Главное окно приложения (для FilePicker и т.п.).</summary>
+        public Window? MainWindow => _window;           // ← ДОБАВЛЕНО
+
         public App()
         {
             InitializeComponent();

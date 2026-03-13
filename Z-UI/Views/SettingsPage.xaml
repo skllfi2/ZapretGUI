@@ -9,41 +9,91 @@
     mc:Ignorable="d">
 
     <ScrollViewer Padding="32,24,32,24">
-        <StackPanel Spacing="8" HorizontalAlignment="Stretch">
+        <StackPanel HorizontalAlignment="Stretch">
 
 
-            <!-- Запуск -->
-            <TextBlock x:Uid="Zapusk" Text="Запуск" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,0,0,8"/>
-            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1" CornerRadius="8" Padding="16,8">
-                <StackPanel>
+            <!-- ═══════════════════════════════ Запуск ═══════════════════════════════ -->
+            <TextBlock x:Uid="Zapusk" Text="Запуск"
+                       Style="{StaticResource BodyStrongTextBlockStyle}"
+                       Margin="2,0,0,6"/>
+            <StackPanel Spacing="2" Margin="0,0,0,20">
 
-                    <Grid Padding="0,10">
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="16,12">
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                            <TextBlock x:Uid="AvtozapuskVmesteSWindows" Text="Автозапуск вместе с Windows" Style="{StaticResource BodyTextBlockStyle}"/>
-                            <TextBlock x:Uid="ZapuskatZUIPriVkhodeVSistemu" Text="Запускать ZUI при входе в систему" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
+                            <TextBlock x:Uid="AvtozapuskVmesteSWindows" Text="Автозапуск вместе с Windows"
+                                       Style="{StaticResource BodyTextBlockStyle}"/>
+                            <TextBlock x:Uid="ZapuskatZUIPriVkhodeVSistemu" Text="Запускать Z-UI при входе в систему"
+                                       Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
                         </StackPanel>
                         <ToggleSwitch x:Uid="AutostartToggle" x:Name="AutostartToggle" Grid.Column="1"
                                       OnContent="" OffContent="" VerticalAlignment="Center"
                                       HorizontalAlignment="Right" MinWidth="0" Margin="0" Padding="0"
                                       Toggled="AutostartToggle_Toggled"/>
                     </Grid>
+                </Border>
 
-                    <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}"/>
-
-                    <Grid Padding="0,10">
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="16,12">
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                            <TextBlock x:Uid="AvtoproverkaObnovleniy" Text="Автопроверка обновлений" Style="{StaticResource BodyTextBlockStyle}"/>
-                            <TextBlock x:Uid="ProveryatNovyeVersiiZapretPriZapuskePrilozheniya" Text="Проверять новые версии zapret при запуске приложения"
+                            <TextBlock x:Uid="AvtostartZapret" Text="Запускать защиту автоматически"
+                                       Style="{StaticResource BodyTextBlockStyle}"/>
+                            <TextBlock x:Uid="ZapuskatZaschituPriOtkrytiiPrilozheniya" Text="Запускать защиту при открытии приложения"
+                                       Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
+                        </StackPanel>
+                        <ToggleSwitch x:Uid="AutoStartZapretToggle" x:Name="AutoStartZapretToggle" Grid.Column="1"
+                                      OnContent="" OffContent="" VerticalAlignment="Center"
+                                      HorizontalAlignment="Right" MinWidth="0" Margin="0" Padding="0"
+                                      Toggled="AutoStartZapretToggle_Toggled"/>
+                    </Grid>
+                </Border>
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="16,12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock x:Uid="MinimizatsiyaVTreyPriZapuske" Text="Минимизация в трей при запуске"
+                                       Style="{StaticResource BodyTextBlockStyle}"/>
+                            <TextBlock x:Uid="SkryvatOknoPriStartePrilozheniya" Text="Скрывать окно при старте приложения"
+                                       Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
+                        </StackPanel>
+                        <ToggleSwitch x:Uid="MinimizeToTrayToggle" x:Name="MinimizeToTrayToggle" Grid.Column="1"
+                                      OnContent="" OffContent="" VerticalAlignment="Center"
+                                      HorizontalAlignment="Right" MinWidth="0" Margin="0" Padding="0"
+                                      Toggled="MinimizeToTrayToggle_Toggled"/>
+                    </Grid>
+                </Border>
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="16,12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock x:Uid="AvtoproverkaObnovleniy" Text="Автопроверка обновлений"
+                                       Style="{StaticResource BodyTextBlockStyle}"/>
+                            <TextBlock x:Uid="ProveryatNovyeVersiiZapretPriZapuskePrilozheniya"
+                                       Text="Проверять новые версии zapret при запуске приложения"
                                        Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
                         </StackPanel>
                         <ToggleSwitch x:Uid="AutoUpdateCheckToggle" x:Name="AutoUpdateCheckToggle" Grid.Column="1"
@@ -51,17 +101,21 @@
                                       HorizontalAlignment="Right" MinWidth="0" Margin="0" Padding="0"
                                       Toggled="AutoUpdateCheckToggle_Toggled"/>
                     </Grid>
+                </Border>
 
-                    <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}"/>
-
-                    <Grid Padding="0,10">
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="16,12">
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                            <TextBlock x:Uid="AvtoobnovlenieHosts" Text="Автообновление hosts" Style="{StaticResource BodyTextBlockStyle}"/>
-                            <TextBlock x:Uid="PrimenyatObnovleniyaHostsAvtomaticheskiPriZapuskeT" Text="Применять обновления hosts автоматически при запуске (требует прав администратора)"
+                            <TextBlock x:Uid="AvtoobnovlenieHosts" Text="Автообновление hosts"
+                                       Style="{StaticResource BodyTextBlockStyle}"/>
+                            <TextBlock x:Uid="PrimenyatObnovleniyaHostsAvtomaticheskiPriZapuskeT"
+                                       Text="Применять обновления hosts автоматически при запуске (требует прав администратора)"
                                        Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
                         </StackPanel>
                         <ToggleSwitch x:Uid="HostsAutoUpdateToggle" x:Name="HostsAutoUpdateToggle" Grid.Column="1"
@@ -69,162 +123,141 @@
                                       HorizontalAlignment="Right" MinWidth="0" Margin="0" Padding="0"
                                       Toggled="HostsAutoUpdateToggle_Toggled"/>
                     </Grid>
+                </Border>
 
-                    <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}"/>
+            </StackPanel>
 
-                    <Grid Padding="0,10">
+
+            <!-- ═══════════════════════════════ Внешний вид ═══════════════════════════════ -->
+            <TextBlock x:Uid="VneshniyVid" Text="Внешний вид"
+                       Style="{StaticResource BodyStrongTextBlockStyle}"
+                       Margin="2,0,0,6"/>
+            <StackPanel Spacing="2" Margin="0,0,0,20">
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="16,12">
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                            <TextBlock x:Uid="AvtostartZapret" Text="Запускать защиту автоматически" Style="{StaticResource BodyTextBlockStyle}"/>
-                            <TextBlock x:Uid="ZapuskatZaschituPriOtkrytiiPrilozheniya" Text="Запускать защиту при открытии приложения" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
+                            <TextBlock x:Uid="TemaPrilozheniya" Text="Тема приложения"
+                                       Style="{StaticResource BodyTextBlockStyle}"/>
+                            <TextBlock x:Uid="VyberiteSvetluyuTyomnuyuIliSistemnuyuTemu"
+                                       Text="Выберите светлую, тёмную или системную тему"
+                                       Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
                         </StackPanel>
-                        <ToggleSwitch x:Uid="AutoStartZapretToggle" x:Name="AutoStartZapretToggle" Grid.Column="1"
-                                      OnContent="" OffContent="" VerticalAlignment="Center"
-                                      HorizontalAlignment="Right" MinWidth="0" Margin="0" Padding="0"
-                                      Toggled="AutoStartZapretToggle_Toggled"/>
-                    </Grid>
-
-                    <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}"/>
-
-                    <Grid Padding="0,10">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                            <TextBlock x:Uid="MinimizatsiyaVTreyPriZapuske" Text="Минимизация в трей при запуске" Style="{StaticResource BodyTextBlockStyle}"/>
-                            <TextBlock x:Uid="SkryvatOknoPriStartePrilozheniya" Text="Скрывать окно при старте приложения" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
-                        </StackPanel>
-                        <ToggleSwitch x:Uid="MinimizeToTrayToggle" x:Name="MinimizeToTrayToggle" Grid.Column="1"
-                                      OnContent="" OffContent="" VerticalAlignment="Center"
-                                      HorizontalAlignment="Right" MinWidth="0" Margin="0" Padding="0"
-                                      Toggled="MinimizeToTrayToggle_Toggled"/>
-                    </Grid>
-
-                </StackPanel>
-            </Border>
-
-            <!-- Внешний вид -->
-            <TextBlock x:Uid="VneshniyVid" Text="Внешний вид" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,16,0,8"/>
-            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1" CornerRadius="8" Padding="16,8">
-                <StackPanel>
-
-                    <Grid Padding="0,10">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                            <TextBlock x:Uid="TemaPrilozheniya" Text="Тема приложения" Style="{StaticResource BodyTextBlockStyle}"/>
-                            <TextBlock x:Uid="VyberiteSvetluyuTyomnuyuIliSistemnuyuTemu" Text="Выберите светлую, тёмную или системную тему" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
-                        </StackPanel>
-                        <ComboBox x:Name="ThemeComboBox" Grid.Column="1"
-                                  MinWidth="160" VerticalAlignment="Center"
+                        <ComboBox x:Uid="ThemeComboBox" x:Name="ThemeComboBox" Grid.Column="1"
+                                  VerticalAlignment="Center" MinWidth="140"
                                   SelectionChanged="ThemeComboBox_SelectionChanged">
-                            <ComboBoxItem x:Uid="Sistemnaya" Content="Системная" Tag="Default"/>
-                            <ComboBoxItem x:Uid="Svetlaya" Content="Светлая" Tag="Light"/>
-                            <ComboBoxItem x:Uid="Tyomnaya" Content="Тёмная" Tag="Dark"/>
+                            <ComboBoxItem x:Uid="Sistemno" Content="Системно" Tag="Default"/>
+                            <ComboBoxItem x:Uid="Svetlaya" Content="Светлая"  Tag="Light"/>
+                            <ComboBoxItem x:Uid="Tyomnaya" Content="Тёмная"   Tag="Dark"/>
                         </ComboBox>
                     </Grid>
+                </Border>
 
-                    <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}"/>
-
-                    <Grid Padding="0,10">
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="16,12">
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                            <TextBlock x:Uid="Yazyk" Text="Язык" Style="{StaticResource BodyTextBlockStyle}"/>
-                            <TextBlock x:Uid="YazykInterfeysaPrilozheniya" Text="Язык интерфейса приложения" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
+                            <TextBlock x:Uid="YazikPrilozheniya" Text="Язык приложения"
+                                       Style="{StaticResource BodyTextBlockStyle}"/>
+                            <TextBlock x:Uid="PerezapuskaetInterfeysDlyaSmenyYazika"
+                                       Text="Перезапускает интерфейс для смены языка"
+                                       Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
                         </StackPanel>
-                        <ComboBox x:Name="LanguageComboBox" Grid.Column="1"
-                                  MinWidth="160" VerticalAlignment="Center"
+                        <ComboBox x:Uid="LanguageComboBox" x:Name="LanguageComboBox" Grid.Column="1"
+                                  VerticalAlignment="Center" MinWidth="140"
                                   SelectionChanged="LanguageComboBox_SelectionChanged">
-                            <ComboBoxItem x:Uid="Russkiy" Content="Русский" Tag="ru"/>
-                            <ComboBoxItem x:Uid="English" Content="English" Tag="en"/>
+                            <ComboBoxItem x:Uid="Russkiy"  Content="Русский"  Tag="ru"/>
+                            <ComboBoxItem x:Uid="English"  Content="English"   Tag="en"/>
                         </ComboBox>
                     </Grid>
+                </Border>
 
-                </StackPanel>
-            </Border>
-
-            <!-- Уведомления -->
-            <TextBlock x:Uid="Uvedomleniya" Text="Уведомления" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,16,0,8"/>
-            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1" CornerRadius="8" Padding="16,8">
-                <StackPanel>
-
-                    <Grid Padding="0,10">
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="16,12">
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                            <TextBlock x:Uid="ZvukovyeEffekty" Text="Звуковые эффекты" Style="{StaticResource BodyTextBlockStyle}"/>
-                            <TextBlock x:Uid="ZvukPriZapuskeIOstanovkeZaschity" Text="Звук при запуске и остановке защиты" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
+                            <TextBlock x:Uid="ZvukovyeEfekty" Text="Звуковые эффекты"
+                                       Style="{StaticResource BodyTextBlockStyle}"/>
+                            <TextBlock x:Uid="VosproizvoditZvukPriIzmeneniiStatusa"
+                                       Text="Воспроизводить звук при изменении статуса"
+                                       Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
                         </StackPanel>
                         <ToggleSwitch x:Uid="SoundEffectsToggle" x:Name="SoundEffectsToggle" Grid.Column="1"
                                       OnContent="" OffContent="" VerticalAlignment="Center"
                                       HorizontalAlignment="Right" MinWidth="0" Margin="0" Padding="0"
                                       Toggled="SoundEffectsToggle_Toggled"/>
                     </Grid>
+                </Border>
 
-                    <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}"/>
-
-                    <Grid Padding="0,10">
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="16,12">
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                            <TextBlock x:Uid="VsplyvayuschieUvedomleniya" Text="Всплывающие уведомления" Style="{StaticResource BodyTextBlockStyle}"/>
-                            <TextBlock x:Uid="PokazyvatUvedomleniyaPriIzmeneniiStatusa" Text="Показывать уведомления при изменении статуса" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
+                            <TextBlock x:Uid="VsplyvayuschieUvedomleniya" Text="Всплывающие уведомления"
+                                       Style="{StaticResource BodyTextBlockStyle}"/>
+                            <TextBlock x:Uid="PokazyvatUvedomleniyaPriIzmeneniiStatusa"
+                                       Text="Показывать уведомления при изменении статуса"
+                                       Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
                         </StackPanel>
                         <ToggleSwitch x:Uid="ToastNotificationsToggle" x:Name="ToastNotificationsToggle" Grid.Column="1"
                                       OnContent="" OffContent="" VerticalAlignment="Center"
                                       HorizontalAlignment="Right" MinWidth="0" Margin="0" Padding="0"
                                       Toggled="ToastNotificationsToggle_Toggled"/>
                     </Grid>
+                </Border>
 
-                </StackPanel>
-            </Border>
+            </StackPanel>
 
 
-            <!-- Служба Windows -->
-            <TextBlock x:Uid="SluzhbaWindows" Text="Служба Windows" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,16,0,8"/>
-            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1" CornerRadius="8" Padding="16,8">
-                <StackPanel Spacing="0">
+            <!-- ═══════════════════════════════ Служба Windows ═══════════════════════════════ -->
+            <TextBlock x:Uid="SluzhbaWindows" Text="Служба Windows"
+                       Style="{StaticResource BodyStrongTextBlockStyle}"
+                       Margin="2,0,0,6"/>
+            <StackPanel Spacing="2" Margin="0,0,0,20">
 
-                    <Grid Padding="0,10">
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="16,12">
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock x:Uid="SluzhbaZapret" Text="Служба zapret"
+                                   Style="{StaticResource BodyTextBlockStyle}"/>
+                        <TextBlock x:Uid="ServiceStatusText" x:Name="ServiceStatusText" Text="Проверяется..."
+                                   Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="16,12">
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                            <TextBlock x:Uid="SluzhbaZapret" Text="Служба zapret" Style="{StaticResource BodyTextBlockStyle}"/>
-                            <TextBlock x:Uid="ServiceStatusText" x:Name="ServiceStatusText" Text="Проверяется..."
-                                       Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
-                        </StackPanel>
-                    </Grid>
-
-                    <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}"/>
-
-                    <Grid Padding="0,10">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                            <TextBlock x:Uid="UstanovitSluzhbu" Text="Установить службу" Style="{StaticResource BodyTextBlockStyle}"/>
+                            <TextBlock x:Uid="UstanovitSluzhbu" Text="Установить службу"
+                                       Style="{StaticResource BodyTextBlockStyle}"/>
                             <TextBlock x:Uid="AvtozapuskSluzhbySWindowsBezZapuskaPrilozheniya"
                                        Text="Автозапуск службы с Windows без запуска приложения"
                                        Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
@@ -233,16 +266,19 @@
                                 Content="Установить" Style="{StaticResource AccentButtonStyle}"
                                 Click="InstallService_Click" VerticalAlignment="Center"/>
                     </Grid>
+                </Border>
 
-                    <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}"/>
-
-                    <Grid Padding="0,10">
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="16,12">
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                            <TextBlock x:Uid="UdalitSluzhby" Text="Удалить службы" Style="{StaticResource BodyTextBlockStyle}"/>
+                            <TextBlock x:Uid="UdalitSluzhby" Text="Удалить службы"
+                                       Style="{StaticResource BodyTextBlockStyle}"/>
                             <TextBlock x:Uid="UdalyaetZapretWindivertIZavershaetWinwsExe"
                                        Text="Удаляет zapret, WinDivert и завершает winws.exe"
                                        Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
@@ -250,11 +286,14 @@
                         <Button x:Uid="Udalit" Grid.Column="1" Content="Удалить"
                                 Click="RemoveService_Click" VerticalAlignment="Center"/>
                     </Grid>
+                </Border>
 
-                    <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}"/>
-
-                    <StackPanel Padding="0,10" Spacing="6">
-                        <TextBlock x:Uid="LogOperatsiy" Text="Лог операций" Style="{StaticResource BodyTextBlockStyle}"/>
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="16,12">
+                    <StackPanel Spacing="6">
+                        <TextBlock x:Uid="LogOperatsiy" Text="Лог операций"
+                                   Style="{StaticResource BodyTextBlockStyle}"/>
                         <Border Background="{ThemeResource SystemFillColorSolidNeutralBackgroundBrush}"
                                 CornerRadius="4" Padding="10">
                             <ScrollViewer x:Name="ServiceLogScrollViewer" MaxHeight="120">
@@ -264,125 +303,68 @@
                             </ScrollViewer>
                         </Border>
                     </StackPanel>
+                </Border>
 
-                </StackPanel>
-            </Border>
+            </StackPanel>
 
 
-            <!-- Анимации -->
-            <TextBlock x:Uid="Animatsii" Text="Анимации" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,16,0,8"/>
-            <Border x:Name="AnimationsCard"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1" CornerRadius="8">
-                <StackPanel>
+            <!-- ═══════════════════════════════ Мастер установки ═══════════════════════════════ -->
+            <TextBlock x:Uid="MasterUstanovki" Text="Мастер установки"
+                       Style="{StaticResource BodyStrongTextBlockStyle}"
+                       Margin="2,0,0,6"/>
+            <StackPanel Spacing="2" Margin="0,0,0,20">
 
-                    <!-- Заголовок — раскрывающийся -->
-                    <Grid Padding="16,12" x:Name="AnimHeader"
-                          PointerPressed="AnimHeader_PointerPressed">
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="16,12">
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock x:Uid="ZapustitMasteraUstanovki" Text="Запустить мастер установки"
+                                       Style="{StaticResource BodyTextBlockStyle}"/>
+                            <TextBlock x:Uid="PovtoritNastroyku" Text="Повторить первоначальную настройку приложения"
+                                       Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
+                        </StackPanel>
+                        <Button x:Uid="SetupWizardButton" x:Name="SetupWizardButton" Grid.Column="1"
+                                Content="Открыть" Style="{StaticResource AccentButtonStyle}"
+                                Click="SetupWizardButton_Click" VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+
+            </StackPanel>
+
+
+            <!-- ═══════════════════════════════ О программе ═══════════════════════════════ -->
+            <TextBlock x:Uid="OProgramme" Text="О программе"
+                       Style="{StaticResource BodyStrongTextBlockStyle}"
+                       Margin="2,0,0,6"/>
+            <StackPanel Spacing="2" Margin="0,0,0,8">
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="16,12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                            <TextBlock x:Uid="AnimatsiiElementov" Text="Анимации элементов" Style="{StaticResource BodyTextBlockStyle}"/>
-                            <TextBlock x:Uid="AnimSummaryText" x:Name="AnimSummaryText"
-                                       Text="Все категории включены"
+                            <TextBlock x:Uid="ZUIopr" Text="Z-UI"
+                                       Style="{StaticResource BodyTextBlockStyle}"/>
+                            <TextBlock x:Uid="AppVersionText1" x:Name="AppVersionText" Text="Версия..."
                                        Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
                         </StackPanel>
-                        <ToggleSwitch x:Uid="AnimMasterToggle" x:Name="AnimMasterToggle" Grid.Column="1"
-                                      OnContent="" OffContent="" VerticalAlignment="Center"
-                                      HorizontalAlignment="Right" MinWidth="0" Margin="0,0,12,0" Padding="0"
-                                      Toggled="AnimMasterToggle_Toggled"/>
-                        <FontIcon x:Name="AnimExpandIcon" Grid.Column="2"
-                                  Glyph="&#xE70D;" FontSize="12"
-                                  VerticalAlignment="Center" Opacity="0.5"/>
+                        <HyperlinkButton x:Uid="Podrobnee" Grid.Column="1" Content="Подробнее →"
+                                         VerticalAlignment="Center"
+                                         Click="AboutButton_Click"/>
                     </Grid>
+                </Border>
 
-                    <!-- Детальные чекбоксы — раскрываются -->
-                    <StackPanel x:Name="AnimDetailPanel" Visibility="Collapsed">
-                        <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}"/>
+            </StackPanel>
 
-                        <!-- Иконки навигации -->
-                        <Grid Padding="24,12,16,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <CheckBox x:Uid="AnimNavCheck" x:Name="AnimNavCheck" Grid.Column="0"
-                                      VerticalAlignment="Center" Margin="0,0,12,0"
-                                      Checked="AnimNav_Changed" Unchecked="AnimNav_Changed"/>
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
-                                <TextBlock x:Uid="IkonkiNavigatsii" Text="Иконки навигации"
-                                           Style="{StaticResource BodyTextBlockStyle}"/>
-                                <TextBlock x:Uid="AnimatsiyaPriNazhatiiNaPunktyMenyu" Text="Анимация при нажатии на пункты меню"
-                                           Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
-                            </StackPanel>
-                        </Grid>
-
-                        <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="24,0,16,0"/>
-
-                        <!-- Кнопки на страницах -->
-                        <Grid Padding="24,12,16,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <CheckBox x:Uid="AnimButtonsCheck" x:Name="AnimButtonsCheck" Grid.Column="0"
-                                      VerticalAlignment="Center" Margin="0,0,12,0"
-                                      Checked="AnimButtons_Changed" Unchecked="AnimButtons_Changed"/>
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
-                                <TextBlock x:Uid="Knopki" Text="Кнопки"
-                                           Style="{StaticResource BodyTextBlockStyle}"/>
-                                <TextBlock x:Uid="OtklikKnopokPriNazhatiiZapustitProveritIDr" Text="Отклик кнопок при нажатии (Запустить, Проверить и др.)"
-                                           Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
-                            </StackPanel>
-                        </Grid>
-
-                        <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="24,0,16,0"/>
-
-                        <!-- Карточки -->
-                        <Grid Padding="24,12,16,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <CheckBox x:Uid="AnimCardsCheck" x:Name="AnimCardsCheck" Grid.Column="0"
-                                      VerticalAlignment="Center" Margin="0,0,12,0"
-                                      Checked="AnimCards_Changed" Unchecked="AnimCards_Changed"/>
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
-                                <TextBlock x:Uid="KartochkiIIkonkiServisov" Text="Карточки и иконки сервисов"
-                                           Style="{StaticResource BodyTextBlockStyle}"/>
-                                <TextBlock x:Uid="HoverINazhatieNaKartochkiNaGlavnoyStranitse" Text="Hover и нажатие на карточки на главной странице"
-                                           Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
-                            </StackPanel>
-                        </Grid>
-                    </StackPanel>
-
-                </StackPanel>
-            </Border>
-
-            <!-- О программе -->
-            <TextBlock x:Uid="OProgramme" Text="О программе" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,16,0,8"/>
-            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1" CornerRadius="8" Padding="16,8">
-                <Grid Padding="0,10">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                        <TextBlock x:Uid="ZUI1" Text="ZUI" Style="{StaticResource BodyTextBlockStyle}"/>
-                        <TextBlock x:Uid="AppVersionText1" x:Name="AppVersionText" Text="Версия..."
-                                   Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6"/>
-                    </StackPanel>
-                    <HyperlinkButton x:Uid="Podrobnee" Grid.Column="1" Content="Подробнее →"
-                                     VerticalAlignment="Center"
-                                     Click="AboutButton_Click"/>
-                </Grid>
-            </Border>
 
         </StackPanel>
     </ScrollViewer>

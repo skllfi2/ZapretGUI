@@ -67,6 +67,9 @@
     <Content Include="Assets\Z-UI-256x256.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Compile Update="Animations\AnimationType.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
     
     <Compile Update="TrayIcon.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

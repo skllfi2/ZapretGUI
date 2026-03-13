@@ -4,7 +4,6 @@ using Microsoft.Win32;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using ZUI.Animations;
 using ZUI.Services;
 
 namespace ZUI.Views
@@ -12,7 +11,7 @@ namespace ZUI.Views
     public sealed partial class SettingsPage : Page
     {
         private const string RegistryKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
-        private const string AppName = "ZUI";
+        private const string AppName = "Z-UI";
         private bool _isLoading = true;
 
         public SettingsPage()
@@ -25,14 +24,6 @@ namespace ZUI.Views
 
         private void LoadSettings()
         {
-            // Анимации
-            bool anyAnim = AppSettings.AnimNavIcons || AppSettings.AnimButtons || AppSettings.AnimCards;
-            AnimMasterToggle.IsOn    = anyAnim;
-            AnimNavCheck.IsChecked     = AppSettings.AnimNavIcons;
-            AnimButtonsCheck.IsChecked = AppSettings.AnimButtons;
-            AnimCardsCheck.IsChecked   = AppSettings.AnimCards;
-            UpdateAnimSummary();
-
             using var key = Registry.CurrentUser.OpenSubKey(RegistryKey);
             AutostartToggle.IsOn = key?.GetValue(AppName) != null;
 
@@ -192,80 +183,8 @@ namespace ZUI.Views
             AppendServiceLog("Готово.");
             _ = Task.Run(LoadServiceStatus);
         }
-
-        // ── Анимации ─────────────────────────────────────────────────────────
-
-        private bool _animExpanded = false;
-
-        private void AnimHeader_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            _animExpanded = !_animExpanded;
-            AnimDetailPanel.Visibility = _animExpanded ? Visibility.Visible : Visibility.Collapsed;
-            AnimExpandIcon.Glyph = _animExpanded ? "" : "";
-        }
-
-        private void AnimMasterToggle_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (_isLoading) return;
-            bool on = AnimMasterToggle.IsOn;
-            AppSettings.AnimNavIcons = on;
-            AppSettings.AnimButtons  = on;
-            AppSettings.AnimCards    = on;
-
-            _isLoading = true;
-            AnimNavCheck.IsChecked     = on;
-            AnimButtonsCheck.IsChecked = on;
-            AnimCardsCheck.IsChecked   = on;
-            _isLoading = false;
-
-            ApplyAndSave();
-        }
-
-        private void AnimNav_Changed(object sender, RoutedEventArgs e)
-        {
-            if (_isLoading) return;
-            AppSettings.AnimNavIcons = AnimNavCheck.IsChecked == true;
-            ApplyAndSave();
-        }
-
-        private void AnimButtons_Changed(object sender, RoutedEventArgs e)
-        {
-            if (_isLoading) return;
-            AppSettings.AnimButtons = AnimButtonsCheck.IsChecked == true;
-            ApplyAndSave();
-        }
-
-        private void AnimCards_Changed(object sender, RoutedEventArgs e)
-        {
-            if (_isLoading) return;
-            AppSettings.AnimCards = AnimCardsCheck.IsChecked == true;
-            ApplyAndSave();
-        }
-
-        private void ApplyAndSave()
-        {
-            MainWindow.Instance?.ApplyAnimationSettings();
-            UpdateAnimSummary();
-            AppSettings.Save();
-        }
-
-        private void UpdateAnimSummary()
-        {
-            var enabled = new System.Collections.Generic.List<string>();
-            if (AppSettings.AnimNavIcons) enabled.Add("навигация");
-            if (AppSettings.AnimButtons)  enabled.Add("кнопки");
-            if (AppSettings.AnimCards)    enabled.Add("карточки");
-
-            _isLoading = true;
-            AnimMasterToggle.IsOn = enabled.Count > 0;
-            _isLoading = false;
-
-            AnimSummaryText.Text = enabled.Count == 0
-                ? "Все анимации отключены"
-                : enabled.Count == 3
-                    ? "Все категории включены"
-                    : $"Включено: {string.Join(", ", enabled)}";
-        }
+        private void SetupWizardButton_Click(object sender, RoutedEventArgs e) =>
+            MainWindow.Instance?.NavigateTo("setup");
 
         private void AboutButton_Click(object sender, RoutedEventArgs e) =>
             MainWindow.Instance?.NavigateTo("about");

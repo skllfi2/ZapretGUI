@@ -9,7 +9,6 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Windows.UI;
-using ZUI.Animations;
 using ZUI.Services;
 using System.Runtime.InteropServices.WindowsRuntime;
 
@@ -48,14 +47,7 @@ namespace ZUI.Views
             WizardGameFilterComboBox.SelectedIndex = 0;
             WizardIpsetFilterComboBox.SelectedIndex = 0;
 
-            // Анимации кнопок мастера
-            this.Loaded += (s, e) =>
-            {
-                ButtonAnimator.Attach(WizardNextButton);
-                ButtonAnimator.Attach(WizardBackButton);
-                ButtonAnimator.Attach(WizardDownloadButton);
-            };
-
+           
             UpdateStep();
         }
 

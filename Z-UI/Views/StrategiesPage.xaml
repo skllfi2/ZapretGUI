@@ -4,84 +4,286 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="using:ZUI.Views"
     mc:Ignorable="d">
 
-    <Grid Margin="32">
+    <Grid Margin="32,24,32,32">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="24"/>
+            <ColumnDefinition Width="2*" MinWidth="200" MaxWidth="320"/>
+            <ColumnDefinition Width="20"/>
             <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Левая панель — список стратегий -->
+        <!-- ══ Левая панель — список стратегий ══════════════════════════════ -->
         <Grid Grid.Column="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="8"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="8"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
+            <!-- Заголовок -->
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="4"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-            <ListView Grid.Row="1"
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <TextBlock x:Uid="Strategii2" Text="Стратегии"
+                               Style="{ThemeResource SubtitleTextBlockStyle}"
+                               VerticalAlignment="Center"/>
+                    <Border x:Name="StrategyCountBadge"
+                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                            CornerRadius="10" Padding="7,2,7,2"
+                            VerticalAlignment="Center">
+                        <TextBlock x:Uid="StrategyCountText" x:Name="StrategyCountText"
+                                   Text="0"
+                                   Style="{ThemeResource CaptionTextBlockStyle}"
+                                   Opacity="0.7"/>
+                    </Border>
+                </StackPanel>
+
+                <Button x:Uid="ClearRatingsButton" Grid.Column="1"
+                        x:Name="ClearRatingsButton"
+                        ToolTipService.ToolTip="Сбросить результаты тестирования"
+                        Click="ClearRatings_Click"
+                        Padding="6" Opacity="0.6">
+                    <FontIcon Glyph="&#xE894;" FontSize="13"/>
+                </Button>
+            </Grid>
+
+            <!-- Поиск -->
+            <AutoSuggestBox Grid.Row="2"
+                            x:Name="SearchBox"
+                            PlaceholderText="Поиск стратегии..."
+                            QueryIcon="Find"
+                            TextChanged="SearchBox_TextChanged"/>
+
+            <!-- Список -->
+            <ListView Grid.Row="4"
                       x:Name="StrategyListView"
                       SelectionChanged="StrategyListView_SelectionChanged"
                       CornerRadius="8">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+                        <Setter Property="Padding" Value="10,0,10,0"/>
+                        <Setter Property="MinHeight" Value="44"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
+
                 <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock x:Uid="TextBlock" Text="{Binding}" Padding="8,4"/>
+                    <DataTemplate x:DataType="local:StrategyItem">
+                        <Grid ColumnSpacing="8" Margin="0,6,0,6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock x:Uid="TextBlock" Grid.Column="0"
+                                       Text="{x:Bind DisplayName}"
+                                       VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis"
+                                       Style="{ThemeResource BodyTextBlockStyle}"/>
+
+                            <Border Grid.Column="1"
+                                    x:Name="RatingBadge"
+                                    Background="{x:Bind RatingBackground}"
+                                    CornerRadius="10"
+                                    Padding="7,2,7,2"
+                                    VerticalAlignment="Center"
+                                    ToolTipService.ToolTip="{x:Bind RatingTooltip}"
+                                    Visibility="{x:Bind RatingVisible}">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock x:Uid="TextBlock1" Text="{x:Bind RatingEmoji}"
+                                               FontSize="11"
+                                               Foreground="{x:Bind RatingForeground}"
+                                               VerticalAlignment="Center"/>
+                                    <TextBlock x:Uid="TextBlock2" Text="{x:Bind RatingShortLabel}"
+                                               FontSize="11"
+                                               Foreground="{x:Bind RatingForeground}"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
         </Grid>
 
-        <!-- Правая панель — информация -->
+        <!-- ══ Правая панель ═════════════════════════════════════════════════ -->
         <Grid Grid.Column="2">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
 
-            <TextBlock x:Uid="StrategyTitleText" Grid.Row="0"
-                       x:Name="StrategyTitleText"
-                       Text="Выберите стратегию"
-                       Style="{ThemeResource TitleTextBlockStyle}"
-                       Margin="0,0,0,16"/>
+            <!-- Пустое состояние -->
+            <StackPanel x:Name="EmptyState"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        Spacing="12">
+                <FontIcon Glyph="&#xE8FD;"
+                          FontSize="48"
+                          Opacity="0.2"
+                          HorizontalAlignment="Center"/>
+                <TextBlock x:Uid="VyberiteStrategiyu" Text="Выберите стратегию"
+                           Style="{ThemeResource SubtitleTextBlockStyle}"
+                           Opacity="0.4"
+                           HorizontalAlignment="Center"/>
+                <TextBlock x:Uid="NazhmiteNaLyubuyuStrategiyuVSpiskeSleva" Text="Нажмите на любую стратегию в списке слева"
+                           Style="{ThemeResource CaptionTextBlockStyle}"
+                           Opacity="0.3"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
 
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                <StackPanel Spacing="16">
+            <!-- Контент выбранной стратегии -->
+            <Grid x:Name="DetailContent" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-                    <!-- Статус -->
-                    <InfoBar x:Name="StatusInfoBar"
-                             IsOpen="False"
-                             IsClosable="False"/>
-
-                    <!-- Описание -->
-                    <TextBlock x:Uid="StrategyDescText" x:Name="StrategyDescText"
-                               Text="Выберите стратегию из списка слева для просмотра информации."
-                               TextWrapping="Wrap"
-                               Style="{ThemeResource BodyTextBlockStyle}"
-                               Opacity="0.7"/>
-
-                    <!-- Тип стратегии -->
-                    <StackPanel x:Name="StrategyInfoPanel" Visibility="Collapsed" Spacing="8">
-                        <TextBlock x:Uid="TipStrategii" Text="Тип стратегии:" Style="{ThemeResource CaptionTextBlockStyle}" Opacity="0.5"/>
-                        <TextBlock x:Uid="StrategyTypeText" x:Name="StrategyTypeText" Style="{ThemeResource BodyStrongTextBlockStyle}"/>
-
-                        <TextBlock x:Uid="Primenimost" Text="Применимость:" Style="{ThemeResource CaptionTextBlockStyle}" Opacity="0.5" Margin="0,8,0,0"/>
-                        <TextBlock x:Uid="StrategyUsageText" x:Name="StrategyUsageText" TextWrapping="Wrap" Style="{ThemeResource BodyTextBlockStyle}"/>
-                    </StackPanel>
-
+                <!-- Заголовок стратегии -->
+                <StackPanel Grid.Row="0" Spacing="4">
+                    <TextBlock x:Uid="StrategyTitleText" x:Name="StrategyTitleText"
+                               Text=""
+                               Style="{ThemeResource TitleTextBlockStyle}"/>
                 </StackPanel>
-            </ScrollViewer>
 
-            <!-- Кнопка -->
-            <Button x:Uid="ApplyStrategyButton" Grid.Row="2"
-                    x:Name="ApplyStrategyButton"
-                    Content="Применить стратегию"
-                    Click="ApplyStrategyButton_Click"
-                    HorizontalAlignment="Stretch"
-                    Margin="0,16,0,0"
-                    Style="{ThemeResource AccentButtonStyle}"/>
+                <!-- Прокручиваемый контент -->
+                <ScrollViewer Grid.Row="1"
+                              VerticalScrollBarVisibility="Auto"
+                              Margin="0,16,0,0">
+                    <StackPanel Spacing="8">
+
+                        <!-- Статус активной стратегии -->
+                        <InfoBar x:Name="StatusInfoBar"
+                                 IsOpen="False"
+                                 IsClosable="False"
+                                 CornerRadius="8"/>
+
+                        <!-- Карточка результата теста -->
+                        <Border x:Name="TestResultCard"
+                                Visibility="Collapsed"
+                                CornerRadius="8"
+                                BorderThickness="1"
+                                Padding="14,12">
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0"
+                                        x:Name="TestResultIcon"
+                                        Width="40" Height="40"
+                                        CornerRadius="20"
+                                        VerticalAlignment="Center">
+                                    <TextBlock x:Uid="TestResultEmoji" x:Name="TestResultEmoji"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               FontSize="18"/>
+                                </Border>
+
+                                <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                                    <TextBlock x:Uid="TestResultLabel" x:Name="TestResultLabel"
+                                               Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                               FontSize="13"/>
+                                    <TextBlock x:Uid="TestResultSummary" x:Name="TestResultSummary"
+                                               Style="{ThemeResource CaptionTextBlockStyle}"
+                                               Opacity="0.6"
+                                               TextWrapping="Wrap"/>
+                                    <TextBlock x:Uid="TestResultDate" x:Name="TestResultDate"
+                                               Style="{ThemeResource CaptionTextBlockStyle}"
+                                               Opacity="0.4"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Информационные карточки -->
+                        <StackPanel x:Name="StrategyInfoPanel"
+                                    Visibility="Collapsed"
+                                    Spacing="2">
+
+                            <!-- Тип стратегии -->
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1" CornerRadius="8" Padding="14,12">
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0"
+                                            Width="32" Height="32"
+                                            CornerRadius="6"
+                                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                                            VerticalAlignment="Center">
+                                        <FontIcon Glyph="&#xE9F5;"
+                                                  FontSize="14"
+                                                  Opacity="0.7"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock x:Uid="TipStrategii" Text="Тип стратегии"
+                                                   Style="{ThemeResource CaptionTextBlockStyle}"
+                                                   Opacity="0.5"/>
+                                        <TextBlock x:Uid="StrategyTypeText" x:Name="StrategyTypeText"
+                                                   Style="{ThemeResource BodyStrongTextBlockStyle}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Применимость -->
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1" CornerRadius="8" Padding="14,12">
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0"
+                                            Width="32" Height="32"
+                                            CornerRadius="6"
+                                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                                            VerticalAlignment="Top">
+                                        <FontIcon Glyph="&#xE946;"
+                                                  FontSize="14"
+                                                  Opacity="0.7"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock x:Uid="Primenimost" Text="Применимость"
+                                                   Style="{ThemeResource CaptionTextBlockStyle}"
+                                                   Opacity="0.5"/>
+                                        <TextBlock x:Uid="StrategyUsageText" x:Name="StrategyUsageText"
+                                                   TextWrapping="Wrap"
+                                                   Style="{ThemeResource BodyTextBlockStyle}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                        </StackPanel>
+
+                        <!-- Скрытый StrategyDescText — сохранён для совместимости с CS -->
+                        <TextBlock x:Uid="StrategyDescText" x:Name="StrategyDescText"
+                                   Visibility="Collapsed"
+                                   TextWrapping="Wrap"/>
+
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Кнопка применения -->
+                <Button x:Uid="ApplyStrategyButton" x:Name="ApplyStrategyButton"
+                        Grid.Row="2"
+                        Content="Применить стратегию"
+                        Click="ApplyStrategyButton_Click"
+                        HorizontalAlignment="Stretch"
+                        Margin="0,16,0,0"
+                        Style="{ThemeResource AccentButtonStyle}"/>
+            </Grid>
+
         </Grid>
     </Grid>
 </Page>

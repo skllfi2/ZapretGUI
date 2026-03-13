@@ -6,6 +6,7 @@ namespace ZUI
     public static class ZapretPaths
     {
         public static string AppDir => AppContext.BaseDirectory;
+        public static string RootDir => AppDir; // Совместимость с устаревшим кодом
         public static string ZapretDir => Path.Combine(AppDir, "zapret");
         public static string WinwsDir => Path.Combine(ZapretDir, "winws");
         public static string WinwsExe => Path.Combine(WinwsDir, "winws.exe");

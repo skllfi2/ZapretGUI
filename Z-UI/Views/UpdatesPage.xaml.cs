@@ -237,7 +237,7 @@ namespace ZUI.Views
                 var srcBin = Path.Combine(sourceDir, "bin");
                 if (Directory.Exists(srcBin))
                 {
-                    Directory.CreateDirectory(ZapretPaths.WinwsDir);
+                    Directory.CreateDirectory(ZapretPaths.StrategiesDir);
                     foreach (var file in Directory.GetFiles(srcBin))
                     {
                         var dest = Path.Combine(ZapretPaths.WinwsDir, Path.GetFileName(file));
@@ -250,7 +250,6 @@ namespace ZUI.Views
                 Directory.CreateDirectory(ZapretPaths.StrategiesDir);
                 foreach (var file in Directory.GetFiles(sourceDir, "*.bat"))
                 {
-                    if (Path.GetFileName(file).StartsWith("service", StringComparison.OrdinalIgnoreCase)) continue;
                     var dest = Path.Combine(ZapretPaths.StrategiesDir, Path.GetFileName(file));
                     File.Copy(file, dest, overwrite: true);
                 }

@@ -19,7 +19,11 @@ namespace ZUI
         /// Получает или задает текущую выбранную стратегию.
         /// Стратегия определяет конфигурационные параметры для zapret процесса.
         /// </summary>
-        public static string CurrentStrategy { get; set; } = "General";
+        public static string CurrentStrategy
+        {
+            get => AppSettings.CurrentStrategy;
+            set { AppSettings.CurrentStrategy = value; AppSettings.Save(); }
+        }
 
         /// <summary>
         /// Получает коллекцию логов приложения.

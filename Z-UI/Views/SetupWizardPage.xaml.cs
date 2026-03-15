@@ -253,13 +253,10 @@ namespace ZUI.Views
                 var srcBin = System.IO.Path.Combine(sourceDir, "bin");
                 if (Directory.Exists(srcBin)) CopyDir(srcBin, ZapretPaths.WinwsDir);
 
-                // *.bat → strategies (кроме service*.bat)
+                // *.bat → strategies (включая service.bat)
                 Directory.CreateDirectory(ZapretPaths.StrategiesDir);
                 foreach (var f in Directory.GetFiles(sourceDir, "*.bat"))
-                {
-                    if (!System.IO.Path.GetFileName(f).StartsWith("service", StringComparison.OrdinalIgnoreCase))
-                        File.Copy(f, System.IO.Path.Combine(ZapretPaths.StrategiesDir, System.IO.Path.GetFileName(f)), true);
-                }
+                    File.Copy(f, System.IO.Path.Combine(ZapretPaths.StrategiesDir, System.IO.Path.GetFileName(f)), true);
 
                 // lists
                 var srcLists = System.IO.Path.Combine(sourceDir, "lists");

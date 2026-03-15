@@ -7,7 +7,7 @@ namespace ZUI
         [System.STAThread]
         static void Main(string[] args)
         {
-            Bootstrap.Initialize(0x00010008);
+            Bootstrap.Initialize(0x00020000, "experimental6");
             Microsoft.UI.Xaml.Application.Start((p) => { var app = new App(); });
         }
     }

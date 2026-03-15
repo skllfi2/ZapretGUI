@@ -365,3 +365,28 @@ FodyWeavers.xsd
 # IDE and editor configurations
 .gigaide/
 .idea/
+
+# Z-UI specific
+plans/
+plans/*
+!plans/.gitkeep
+
+# Test projects
+Z-UI.Tests/
+
+# Z-UI specific files
+plan.md
+project_structure_analysis.md
+setup.iss
+build.ps1
+Zui.zip
+XAML Tools.bat
+XAML Tools.zip
+xaml_resw_cleanup.py
+xaml_tools_gui.py
+xaml_uid_generator.py
+WindowsAppRuntimeInstall-x64.exe
+installer/
+plans/
+publish/
+setup.iss

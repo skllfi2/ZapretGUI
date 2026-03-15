@@ -34,6 +34,10 @@ namespace ZUI.Views
         private ConfigResult?                          _bestResult;
         private TestMode                               _currentMode = TestMode.Standard;
 
+        // ── Log buffer (for Pivot tab unload/reload) ──────────────────────────
+        private record LogEntry(string Text, Color Color, bool Bold, double Size);
+        private readonly List<LogEntry> _logBuffer = [];
+
         // ── Colour palette ────────────────────────────────────────────────────
         private static readonly Color _colOk      = Color.FromArgb(255,  76, 195, 125);
         private static readonly Color _colError    = Color.FromArgb(255, 220,  80,  70);
@@ -203,22 +207,28 @@ namespace ZUI.Views
                 _lastResults = await _runner.RunAsync(
                     _currentMode, selected, _targets, _dpiSuite,
                     _testCts.Token);
+            }
+            catch (OperationCanceledException) { AppendLog("[ТЕСТ] Остановлено", _colWarn); }
+            catch (Exception ex)               { AppendLog($"[ОШИБКА] {ex.Message}", _colError); }
 
-                BuildResultsCards(_lastResults, _currentMode);
-
+            // Показываем результаты независимо от того, завершён тест или остановлен
+            if (_lastResults.Count > 0)
+            {
                 _bestResult = ZapretTestRunner.FindBest(_lastResults, _currentMode);
-                if (_bestResult is not null) ShowBestBar(_bestResult.ConfigName);
 
                 TestResultStore.Publish(_lastResults, _currentMode);
 
                 _runner.SaveResults(_lastResults, _currentMode,
                     Path.Combine(ZapretPaths.UtilsDir, "test results"));
 
-                ResultsTab.IsEnabled       = true;
-                OutputTabView.SelectedItem = ResultsTab;
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    BuildResultsCards(_lastResults, _currentMode);
+                    if (_bestResult is not null) ShowBestBar(_bestResult.ConfigName);
+                    ResultsTab.IsEnabled       = true;
+                    OutputTabView.SelectedItem = ResultsTab;
+                });
             }
-            catch (OperationCanceledException) { AppendLog("[ТЕСТ] Остановлено", _colWarn); }
-            catch (Exception ex)               { AppendLog($"[ОШИБКА] {ex.Message}", _colError); }
 
             if (serviceWasInstalled && serviceStrategy is not null)
             {
@@ -729,24 +739,43 @@ namespace ZUI.Views
         private void AppendLog(string text, Color? color = null,
             bool bold = false, double size = 0)
         {
+            var entry = new LogEntry(text, color ?? _colDim, bold, size);
+            lock (_logBuffer) _logBuffer.Add(entry);
             DispatcherQueue.TryEnqueue(() =>
             {
-                var para = new Paragraph { Margin = new Thickness(0) };
-                var run  = new Run { Text = text };
-                run.Foreground = new SolidColorBrush(color ?? _colDim);
-                if (bold) run.FontWeight = FontWeights.SemiBold;
-                if (size > 0) run.FontSize = size;
-                para.Inlines.Add(run);
-                LogRichText.Blocks.Add(para);
+                AppendLogEntry(entry);
                 LogScrollViewer.ChangeView(null, double.MaxValue, null);
             });
+        }
+
+        private void AppendLogEntry(LogEntry entry)
+        {
+            var para = new Paragraph { Margin = new Thickness(0) };
+            var run  = new Run { Text = entry.Text };
+            run.Foreground = new SolidColorBrush(entry.Color);
+            if (entry.Bold) run.FontWeight = FontWeights.SemiBold;
+            if (entry.Size > 0) run.FontSize = entry.Size;
+            para.Inlines.Add(run);
+            LogRichText.Blocks.Add(para);
+        }
+
+        internal void RebuildLog()
+        {
+            LogRichText.Blocks.Clear();
+            lock (_logBuffer)
+                foreach (var e in _logBuffer)
+                    AppendLogEntry(e);
+            LogScrollViewer.ChangeView(null, double.MaxValue, null);
         }
 
         private void AppendLogSeparator() =>
             AppendLog("─────────────────────────────────────────", _colDim);
 
-        private void ClearLog() =>
+        private void ClearLog()
+        {
+            lock (_logBuffer) _logBuffer.Clear();
             DispatcherQueue.TryEnqueue(() => LogRichText.Blocks.Clear());
+        }
 
         private string CollectLogText()
         {

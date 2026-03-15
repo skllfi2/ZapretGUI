@@ -613,22 +613,33 @@ namespace ZUI.Services
                     _winws.StopAll();
                     var proc = _winws.StartConfig(cfg.FullName);
                     Emit("  Инициализация (5 с)...");
-                    await Task.Delay(5000, ct);
+                    try { await Task.Delay(5000, ct); }
+                    catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+                    catch (OperationCanceledException) { /* spurious - continue */ }
 
                     ConfigResult result;
-                    if (mode == TestMode.Standard)
+                    try
                     {
-                        ReportProgress(i + 1, configs.Count, cfg.Name, "HTTP + Ping тесты...");
-                        var r = await _standard.RunAsync(targets, ct);
-                        result = new ConfigResult(cfg.Name, r, []);
-                        LogStandardResults(r);
+                        if (mode == TestMode.Standard)
+                        {
+                            ReportProgress(i + 1, configs.Count, cfg.Name, "HTTP + Ping тесты...");
+                            var r = await _standard.RunAsync(targets, ct);
+                            result = new ConfigResult(cfg.Name, r, []);
+                            LogStandardResults(r);
+                        }
+                        else
+                        {
+                            ReportProgress(i + 1, configs.Count, cfg.Name, "DPI TCP 16-20 тесты...");
+                            var r = await _dpi.RunAsync(suite, ct);
+                            result = new ConfigResult(cfg.Name, [], r);
+                            LogDpiResults(r);
+                        }
                     }
-                    else
+                    catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+                    catch (Exception ex)
                     {
-                        ReportProgress(i + 1, configs.Count, cfg.Name, "DPI TCP 16-20 тесты...");
-                        var r = await _dpi.RunAsync(suite, ct);
-                        result = new ConfigResult(cfg.Name, [], r);
-                        LogDpiResults(r);
+                        Emit($"  [ОШИБКА] Стратегия пропущена: {ex.Message}");
+                        result = new ConfigResult(cfg.Name, [], []);
                     }
 
                     results.Add(result);
@@ -640,9 +651,13 @@ namespace ZUI.Services
                 Emit("\n✓ Все тесты завершены");
                 LogAnalytics(results, mode);
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
                 Emit("[INFO] Тестирование остановлено пользователем");
+            }
+            catch (OperationCanceledException ex)
+            {
+                Emit($"[ОШИБКА] Неожиданная отмена: {ex.Message}");
             }
             finally
             {

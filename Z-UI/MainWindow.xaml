@@ -30,7 +30,7 @@
                               ToolTipService.ToolTip="{x:Null}">
 
                             <!-- Фон -->
-                            <Rectangle x:Name="Background"
+                            <Rectangle x:Name="BackgroundRect"
                                        Fill="{ThemeResource NavigationViewItemBackground}"
                                        RadiusX="4" RadiusY="4"
                                        Margin="4,2"/>
@@ -47,7 +47,7 @@
                                                   Width="20" Height="20"
                                                   HorizontalContentAlignment="Center"
                                                   VerticalContentAlignment="Center"/>
-                                <TextBlock x:Uid="ContentText" x:Name="ContentText"
+                                <TextBlock x:Name="ContentText"
                                            Text="{TemplateBinding Content}"
                                            FontSize="10"
                                            HorizontalAlignment="Center"
@@ -69,42 +69,42 @@
                                 <VisualStateGroup x:Name="CommonStates">
                                     <VisualState x:Name="Normal">
                                         <VisualState.Setters>
-                                            <Setter Target="Background.Fill" Value="{ThemeResource NavigationViewItemBackground}"/>
+                                            <Setter Target="BackgroundRect.Fill" Value="{ThemeResource NavigationViewItemBackground}"/>
                                             <Setter Target="SelectionIndicator.Opacity" Value="0"/>
                                             <Setter Target="ContentText.Visibility" Value="Visible"/>
                                         </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="PointerOver">
                                         <VisualState.Setters>
-                                            <Setter Target="Background.Fill" Value="{ThemeResource NavigationViewItemBackgroundPointerOver}"/>
+                                            <Setter Target="BackgroundRect.Fill" Value="{ThemeResource NavigationViewItemBackgroundPointerOver}"/>
                                             <Setter Target="SelectionIndicator.Opacity" Value="0"/>
                                             <Setter Target="ContentText.Visibility" Value="Visible"/>
                                         </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="Pressed">
                                         <VisualState.Setters>
-                                            <Setter Target="Background.Fill" Value="{ThemeResource NavigationViewItemBackgroundPressed}"/>
+                                            <Setter Target="BackgroundRect.Fill" Value="{ThemeResource NavigationViewItemBackgroundPressed}"/>
                                             <Setter Target="SelectionIndicator.Opacity" Value="0"/>
                                             <Setter Target="ContentText.Visibility" Value="Visible"/>
                                         </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="Selected">
                                         <VisualState.Setters>
-                                            <Setter Target="Background.Fill" Value="{ThemeResource NavigationViewItemBackgroundSelected}"/>
+                                            <Setter Target="BackgroundRect.Fill" Value="{ThemeResource NavigationViewItemBackgroundSelected}"/>
                                             <Setter Target="SelectionIndicator.Opacity" Value="1"/>
                                             <Setter Target="ContentText.Visibility" Value="Collapsed"/>
                                         </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="PointerOverSelected">
                                         <VisualState.Setters>
-                                            <Setter Target="Background.Fill" Value="{ThemeResource NavigationViewItemBackgroundSelectedPointerOver}"/>
+                                            <Setter Target="BackgroundRect.Fill" Value="{ThemeResource NavigationViewItemBackgroundSelectedPointerOver}"/>
                                             <Setter Target="SelectionIndicator.Opacity" Value="1"/>
                                             <Setter Target="ContentText.Visibility" Value="Collapsed"/>
                                         </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="PressedSelected">
                                         <VisualState.Setters>
-                                            <Setter Target="Background.Fill" Value="{ThemeResource NavigationViewItemBackgroundSelectedPressed}"/>
+                                            <Setter Target="BackgroundRect.Fill" Value="{ThemeResource NavigationViewItemBackgroundSelectedPressed}"/>
                                             <Setter Target="SelectionIndicator.Opacity" Value="1"/>
                                             <Setter Target="ContentText.Visibility" Value="Collapsed"/>
                                         </VisualState.Setters>
@@ -115,7 +115,7 @@
                                         </VisualState.Setters>
                                     </VisualState>
                                 </VisualStateGroup>
-                            </VisualStateManager.VisualStateGroups>
+            </VisualStateManager.VisualStateGroups>
                         </Grid>
                     </ControlTemplate>
                 </Setter.Value>

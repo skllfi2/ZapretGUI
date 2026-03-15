@@ -252,8 +252,10 @@ namespace ZUI.Views
             // Обновления инициализируются при переключении на вкладку 0
             MainPivot.SelectionChanged += async (s, e) =>
             {
-                if (MainPivot.SelectedIndex == 2) _ = RunDiagnosticsAsync();
-                if (MainPivot.SelectedIndex == 0) await CheckVersionSilentAsync();
+                var idx = MainPivot.SelectedIndex; // захватываем до await
+                if (idx == 2) _ = RunDiagnosticsAsync();
+                if (idx == 0) await CheckVersionSilentAsync();
+                if (idx == 1) RebuildLog();
             };
 
             // Бейдж на вкладке Обновления

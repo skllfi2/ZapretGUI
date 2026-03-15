@@ -20,7 +20,7 @@ namespace ZUI.Views
 
         private void LoadStrategies()
         {
-            var strategiesPath = Path.Combine(AppContext.BaseDirectory, "winws", "strategies");
+            var strategiesPath = ZapretPaths.StrategiesDir;
             if (!Directory.Exists(strategiesPath)) return;
 
             var current = ServiceManager.GetInstalledStrategy();

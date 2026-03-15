@@ -20,6 +20,7 @@ namespace ZUI
         public static string GameFilter { get; set; } = "disabled";
         public static string IpsetFilter { get; set; } = "any";
         public static bool SetupCompleted { get; set; } = false;
+        public static string CurrentStrategy { get; set; } = "General";
         // Анимации — гранулярные флаги
         public static bool AnimNavIcons    { get; set; } = true;  // Иконки навигации
         // Hosts
@@ -49,6 +50,7 @@ namespace ZUI
                 GameFilter = data.GameFilter ?? "disabled";
                 IpsetFilter = data.IpsetFilter ?? "any";
                 SetupCompleted = data.SetupCompleted;
+                CurrentStrategy = data.CurrentStrategy ?? "General";
                 AnimNavIcons = data.AnimNavIcons;
                 AnimButtons  = data.AnimButtons;
                 AnimCards    = data.AnimCards;
@@ -76,6 +78,7 @@ namespace ZUI
                     GameFilter = GameFilter,
                     IpsetFilter = IpsetFilter,
                     SetupCompleted = SetupCompleted,
+                    CurrentStrategy = CurrentStrategy,
                     AnimNavIcons = AnimNavIcons,
                     AnimButtons  = AnimButtons,
                     AnimCards    = AnimCards,
@@ -100,6 +103,7 @@ namespace ZUI
             public string? GameFilter { get; set; }
             public string? IpsetFilter { get; set; }
             public bool SetupCompleted { get; set; }
+            public string? CurrentStrategy { get; set; } = "General";
             public bool AnimNavIcons { get; set; } = true;
             public bool AnimButtons  { get; set; } = true;
             public bool AnimCards    { get; set; } = true;

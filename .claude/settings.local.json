@@ -26,7 +26,9 @@
       "Bash(msbuild /t:Rebuild /v:minimal /p:Configuration=Debug ViewsServicesPage.xaml.cs)",
       "mcp__plugin_serena_serena__check_onboarding_performed",
       "mcp__plugin_serena_serena__execute_shell_command",
-      "Read(//f/Development/Winslop/**)"
+      "Read(//f/Development/Winslop/**)",
+      "Bash(dir /s /b *.sln)",
+      "Bash(dotnet new:*)"
     ],
     "additionalDirectories": [
       "C:\\Users\\SKLLFI.DESKTOP-PJ6BFTT\\Downloads\\fluent-icons-tools\\fluent-icons-tools\\icons"

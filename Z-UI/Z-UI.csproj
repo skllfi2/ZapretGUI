@@ -10,9 +10,10 @@
     <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
     <PublishProfile>win-$(Platform).pubxml</PublishProfile>
     <UseWinUI>true</UseWinUI>
-    <WinUISDKReferences>false</WinUISDKReferences>
+    <WindowsPackageType>None</WindowsPackageType>
     <EnableMsixTooling>false</EnableMsixTooling>
     <Nullable>enable</Nullable>
+    <PriGeneratorSuppressedWarnings>PRI263</PriGeneratorSuppressedWarnings>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,9 +35,25 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="zapret\strategies\bin\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="zapret\strategies\lists\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="zapret\strategies\*.bat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.1-RTM" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.0.250930001-experimental1" />
-    <PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.4" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.0.0-experimental6" />
+    <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.5" />
+    <PackageReference Include="MSTest.TestFramework" Version="4.1.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="4.1.0" />
+    <PackageReference Include="FluentAssertions" Version="8.8.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -74,125 +91,56 @@
     <Compile Update="TrayIcon.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Compile>
-    <!-- Версия zapret -->
-    <None Update="zapret\utils\test zapret.ps1">
+    
+    <Content Update="zapret\strategies\bin\cygwin1.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    </Content>
+    
+    <Content Update="zapret\strategies\bin\quic_initial_www_google_com.bin">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    
+    <Content Update="zapret\strategies\bin\stun.bin">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    
+    <Content Update="zapret\strategies\bin\tls_clienthello_4pda_to.bin">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    
+    <Content Update="zapret\strategies\bin\tls_clienthello_max_ru.bin">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    
+    <Content Update="zapret\strategies\bin\tls_clienthello_www_google_com.bin">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    
+    <Content Update="zapret\strategies\bin\WinDivert.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    
+    <Content Update="zapret\strategies\bin\WinDivert64.sys">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    
+    <Content Update="zapret\strategies\bin\winws.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    
+    <Content Update="zapret\strategies\service.bat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    
+    <Content Update="zapret\version.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+
+    <!-- Стратегии покрыты wildcard Include выше -->
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="zapret\version.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-
-    <!-- Бинарники winws -->
-    <None Update="zapret\winws\winws.exe">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\winws\cygwin1.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\winws\WinDivert.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\winws\WinDivert64.sys">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\winws\quic_initial_www_google_com.bin">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\winws\stun.bin">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\winws\tls_clienthello_4pda_to.bin">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\winws\tls_clienthello_max_ru.bin">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\winws\tls_clienthello_www_google_com.bin">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-
-    <!-- Списки -->
-    <None Update="zapret\lists\ipset-all.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\lists\ipset-exclude-user.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\lists\ipset-exclude.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\lists\list-exclude-user.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\lists\list-exclude.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\lists\list-general-user.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\lists\list-general.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\lists\list-google.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-
-    <!-- Стратегии -->
-    <None Update="zapret\strategies\general.bat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\strategies\general %28ALT%29.bat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\strategies\general %28ALT2%29.bat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\strategies\general %28ALT3%29.bat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\strategies\general %28ALT4%29.bat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\strategies\general %28ALT5%29.bat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\strategies\general %28ALT6%29.bat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\strategies\general %28ALT7%29.bat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\strategies\general %28ALT8%29.bat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\strategies\general %28ALT9%29.bat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\strategies\general %28ALT10%29.bat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\strategies\general %28ALT11%29.bat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\strategies\general %28FAKE TLS AUTO%29.bat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\strategies\general %28FAKE TLS AUTO ALT%29.bat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\strategies\general %28FAKE TLS AUTO ALT2%29.bat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\strategies\general %28FAKE TLS AUTO ALT3%29.bat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\strategies\general %28SIMPLE FAKE%29.bat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\strategies\general %28SIMPLE FAKE ALT%29.bat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zapret\strategies\general %28SIMPLE FAKE ALT2%29.bat">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -233,10 +181,17 @@
 
   <PropertyGroup>
     <PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>
-    <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
+    <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">False</PublishReadyToRun>
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
-    <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
+    <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">False</PublishTrimmed>
+    <ApplicationIcon>Assets\Z-UI.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <Target Name="CopyPriToPublish" AfterTargets="Publish">
+    <Copy SourceFiles="$(OutDir)Z-UI.pri"
+          DestinationFiles="$(PublishDir)resources.pri"
+          Condition="Exists('$(OutDir)Z-UI.pri')"/>
+  </Target>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <Exec Command="taskkill /F /IM winws.exe 2&gt;nul&#xD;&#xA;sc stop WinDivert 2&gt;nul&#xD;&#xA;sc stop WinDivert14 2&gt;nul&#xD;&#xA;sc delete WinDivert 2&gt;nul&#xD;&#xA;sc delete WinDivert14 2&gt;nul&#xD;&#xA;ping -n 2 127.0.0.1 &gt;nul&#xD;&#xA;exit 0" />

@@ -112,12 +112,14 @@ namespace ZUI.Views
             // Кнопка
             if (running)
             {
-                ToggleButton.Content = "⏹  Остановить";
+                ToggleButtonIcon.Glyph = ""; // Stop
+                ToggleButtonText.Text  = "Остановить";
                 ToggleButton.Style = (Style)Application.Current.Resources["DefaultButtonStyle"];
             }
             else
             {
-                ToggleButton.Content = "▶  Запустить";
+                ToggleButtonIcon.Glyph = ""; // Play
+                ToggleButtonText.Text  = "Запустить";
                 ToggleButton.Style = (Style)Application.Current.Resources["AccentButtonStyle"];
             }
 

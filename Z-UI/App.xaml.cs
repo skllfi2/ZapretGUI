@@ -25,62 +25,84 @@ namespace ZUI
             InitializeComponent();
         }
 
-        protected override void OnLaunched(LaunchActivatedEventArgs args)
+                protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
+            var log = System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Z-UI-log.txt");
+
             try
             {
+                System.IO.File.WriteAllText(log, "Step 1: OnLaunched started\n");
+
                 _window = new MainWindow();
+                System.IO.File.AppendAllText(log, "Step 2: MainWindow created\n");
+
                 _window.Activate();
+                System.IO.File.AppendAllText(log, "Step 3: Activated\n");
 
                 _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(_window);
                 _window.Closed += OnWindowClosed;
+                System.IO.File.AppendAllText(log, "Step 4: HWND obtained\n");
 
                 Microsoft.UI.Xaml.ElementSoundPlayer.State = Microsoft.UI.Xaml.ElementSoundPlayerState.On;
                 Microsoft.UI.Xaml.ElementSoundPlayer.SpatialAudioMode = Microsoft.UI.Xaml.ElementSpatialAudioMode.Off;
-                AppState.WinwsService.SetDispatcherQueue(_window.DispatcherQueue);
+                System.IO.File.AppendAllText(log, "Step 5: SoundPlayer set\n");
 
-                // Initialize toast notifications
+                AppState.WinwsService.SetDispatcherQueue(_window.DispatcherQueue);
+                System.IO.File.AppendAllText(log, "Step 6: DispatcherQueue set\n");
+
                 Services.ToastNotifier.Initialize(_hwnd);
+                System.IO.File.AppendAllText(log, "Step 7: ToastNotifier initialized\n");
 
                 _trayIcon = new TrayIcon(_hwnd,
                     System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "Z-UI.ico"),
                     "Z-UI — Остановлено",
                     onShow: ShowMainWindow,
                     onExit: ExitApp);
-
                 TrayIcon = _trayIcon;
+                System.IO.File.AppendAllText(log, "Step 8: TrayIcon created\n");
 
                 AppState.WinwsService.StatusChanged += isRunning =>
                 {
                     _trayIcon?.UpdateStatus(isRunning);
-                    // Show toast notification for service status change
                     if (Services.ToastNotifier.IsEnabled)
-                    {
                         Services.ToastNotifier.Show(
                             "Статус сервиса",
                             isRunning ? "Запущен" : "Остановлен",
                             Services.ToastType.Success);
-                    }
                 };
+                System.IO.File.AppendAllText(log, "Step 9: StatusChanged subscribed\n");
 
                 if (AppSettings.AutoUpdateCheck)
-                {
                     _ = Task.Run(async () => await Services.UpdateChecker.CheckAsync());
-                }
 
-                // Try auto-start Zapret service if enabled
                 if (AppSettings.AutoStartZapret)
-                {
                     _ = TryAutoStartZapretAsync();
-                }
+
+                System.IO.File.AppendAllText(log, "Step 10: DONE\n");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("CRASH: " + ex.ToString());
+                var sb = new System.Text.StringBuilder();
+                sb.AppendLine("=== CRASH ===");
+                var current = ex;
+                int depth = 0;
+                while (current != null)
+                {
+                    sb.AppendLine($"[{depth}] {current.GetType().FullName}: {current.Message}");
+                    if (current.Data.Contains("RestrictedDescription"))
+                        sb.AppendLine($"    RestrictedDescription: {current.Data["RestrictedDescription"]}");
+                    sb.AppendLine($"    HResult: 0x{current.HResult:X8}");
+                    sb.AppendLine($"    Stack: {current.StackTrace}");
+                    current = current.InnerException;
+                    depth++;
+                }
+                System.IO.File.AppendAllText(log, sb.ToString());
                 throw;
             }
         }
 
+        
         private void OnWindowClosed(object sender, WindowEventArgs args)
         {
             args.Handled = true;
